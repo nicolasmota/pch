@@ -4,6 +4,7 @@ import pytest
 from pcl_core.errors import ValidationFailed
 from pcl_core.schema.contract import ContextQuery
 from pcl_core.service import OWNER
+from pcl_core.testing.spicy_seed import seed_spicy
 from pcl_core.testing.trip_seed import drop_london, seed_trip
 
 REQUIRED_FIELDS = {
@@ -121,3 +122,41 @@ def test_sufficiency_caps_overflow_to_references(hub):
     assert len(contract["memories"]) <= 10
     overflow = [r for r in contract["references"] if r["type"] == "memory"]
     assert overflow
+
+
+def test_supersede_hides_historical_from_live_package(hub):
+    seed = seed_spicy(hub)
+    result = hub.supersede(seed["preference"]["id"], {"value": "like"})
+    contract = hub.get_context_contract(OWNER, "plan dinner this week")
+    spicy = [p for p in contract["preferences"] if p["body"].get("key") == "food.spicy"]
+    assert [p["body"]["value"] for p in spicy] == ["like"]
+    assert seed["preference"]["id"] not in {p["ref"]["id"] for p in spicy}
+    assert seed["preference"]["id"] not in {r["id"] for r in contract["references"]}
+    assert "valid_from" in spicy[0]["body"]
+    assert "valid_until" in spicy[0]["body"]
+    assert result["successor"]["id"] == spicy[0]["ref"]["id"]
+
+
+def test_explicit_window_and_patch_end(hub):
+    seed = seed_trip(hub)
+    pref = hub.create(
+        "preference",
+        {
+            "key": "diet.vegetarian",
+            "value": "yes",
+            "valid_from": "2026-01-01T00:00:00Z",
+            "valid_until": "2026-06-01T00:00:00Z",
+            "project_id": seed["project"]["id"],
+        },
+    )
+    during = hub.get_context_contract(OWNER, "continue planning the trip", as_of="2026-03-01T00:00:00Z")
+    after = hub.get_context_contract(OWNER, "continue planning the trip", as_of="2026-07-01T00:00:00Z")
+    def has_veg(contract):
+        return any(p["ref"]["id"] == pref["id"] for p in contract["preferences"])
+
+    assert has_veg(during)
+    assert not has_veg(after)
+    still = hub.get(pref["id"])
+    assert still["id"] == pref["id"]
+    with pytest.raises(ValidationFailed):
+        hub.patch(pref["id"], {"valid_from": "2026-06-01T00:00:00Z", "valid_until": "2026-01-01T00:00:00Z"}, None)

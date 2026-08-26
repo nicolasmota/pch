@@ -86,3 +86,34 @@ def test_revoked_connection_refuses_and_audits(client):
     assert res.status_code in (401, 403)
     events = client.get("/v1/events", params={"kind": "context.contract"}).json()
     assert any(e.get("extra", {}).get("status") == "refused" for e in events)
+
+
+@pytest.mark.forbidden_context
+def test_historical_personal_preference_does_not_leak(client):
+    trip, work = _seed_world(client)
+    pref = client.post(
+        "/v1/preferences",
+        json={
+            "key": "food.spicy",
+            "value": "dislike",
+            "project_id": trip["id"],
+            "classification": "personal",
+        },
+    ).json()
+    superseded = client.post(
+        f"/v1/preferences/{pref['id']}/supersede",
+        json={"value": "like"},
+    ).json()
+    worker = _agent(client, "work", work["id"])
+    w_body = client.post(
+        "/v1/mcp/tools/get_context_contract",
+        headers={"Authorization": f"Bearer {worker['token']}"},
+        json={"purpose": "schedule around my travel"},
+    ).json()
+    w_ids = {i["ref"]["id"] for sec in ("goals", "memories", "decisions", "preferences") for i in w_body[sec]}
+    w_ids |= {r["id"] for r in w_body.get("references") or []}
+    assert pref["id"] not in w_ids
+    assert superseded["successor"]["id"] not in w_ids
+    for note in w_body["omissions"]:
+        assert "id" not in note
+        assert pref["id"] not in note.get("label", "")

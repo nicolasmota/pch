@@ -106,6 +106,12 @@ TOOL_SCHEMAS: dict[str, dict[str, Any]] = {
                 "minimum": 1,
                 "description": "Optional per-category cap; engine sufficiency caps still apply.",
             },
+            "as_of": {
+                "type": ["string", "null"],
+                "description": (
+                    "UTC instant for current vs historical. Null means now."
+                ),
+            },
         },
         "required": ["purpose"],
     },

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from pcl_core.ids import new_id
 from pcl_core.service import Hub
 
 
@@ -43,15 +44,15 @@ def seed_trip(hub: Hub) -> dict[str, Any]:
             "project_id": pid,
         },
     )
-    red_eye_ok = hub.create(
-        "preference",
-        {
-            "key": "flights.red_eye",
-            "value": "ok-if-cheaper",
-            "rationale": "Conflicting preference for tests",
-            "project_id": pid,
-        },
-    )
+    overlap = {
+        **{k: v for k, v in red_eye.items() if k != "id"},
+        "id": new_id("preference"),
+        "value": "ok-if-cheaper",
+        "rationale": "Conflicting preference for tests",
+        "version": 1,
+    }
+    with hub.engine.tx():
+        red_eye_ok = hub.store.put(overlap, new=True)
     travelers = hub.create(
         "memory",
         {

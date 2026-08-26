@@ -60,6 +60,13 @@ def test_empty_purpose_is_422(client):
     assert events == []
 
 
+def test_invalid_as_of_is_422(client):
+    res = client.post("/v1/mcp/tools/get_context_contract", json={"purpose": "plan dinner", "as_of": "not-a-time"})
+    assert res.status_code == 422
+    events = client.get("/v1/events", params={"kind": "context.contract"}).json()
+    assert events == []
+
+
 def test_no_match_is_200_empty_not_404(client):
     _seed_trip(client)
     res = client.post("/v1/mcp/tools/get_context_contract", json={"purpose": "xyzzy-no-such-situation-zzzz"})
@@ -90,10 +97,11 @@ def test_conflicts_and_determinism(client):
         "/v1/preferences",
         json={"key": "flights.red_eye", "value": "avoid", "project_id": prj["id"]},
     )
-    client.post(
+    other = client.post(
         "/v1/preferences",
-        json={"key": "flights.red_eye", "value": "ok-if-cheaper", "project_id": prj["id"]},
-    )
+        json={"key": "flights.red_eye.alt", "value": "ok-if-cheaper", "project_id": prj["id"]},
+    ).json()
+    client.patch(f"/v1/preferences/{other['id']}", json={"key": "flights.red_eye"})
     a = client.post("/v1/mcp/tools/get_context_contract", json={"purpose": "continue planning the trip"}).json()
     b = client.post("/v1/mcp/tools/get_context_contract", json={"purpose": "continue planning the trip"}).json()
     assert a["conflicts"]
@@ -102,6 +110,22 @@ def test_conflicts_and_determinism(client):
     assert a_ids == b_ids
     for item in a["goals"] + a["preferences"] + a["memories"] + a["decisions"]:
         assert item["citation"]
+
+
+def test_as_of_before_supersede(client):
+    _seed_trip(client)
+    pref = client.post(
+        "/v1/preferences",
+        json={"key": "food.spicy", "value": "dislike", "valid_from": "2026-01-01T00:00:00Z"},
+    ).json()
+    client.post(f"/v1/preferences/{pref['id']}/supersede", json={"value": "like"})
+    past = client.post(
+        "/v1/mcp/tools/get_context_contract",
+        json={"purpose": "continue planning the trip", "as_of": "2026-06-01T00:00:00Z"},
+    ).json()
+    spicy = [p["body"]["value"] for p in past["preferences"] if p["body"].get("key") == "food.spicy"]
+    assert "dislike" in spicy
+    assert "like" not in spicy
 
 
 def test_shared_state_not_renamed(client):

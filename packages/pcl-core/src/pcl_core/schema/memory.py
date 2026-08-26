@@ -1,8 +1,9 @@
 from enum import StrEnum
 
-from pydantic import Field
+from pydantic import Field, model_validator
 
 from pcl_core.schema.metadata import UniversalMetadata
+from pcl_core.timeutil import validate_interval
 
 
 class MemoryKind(StrEnum):
@@ -26,3 +27,11 @@ class Memory(UniversalMetadata):
     project_id: str | None = None
     sensitivity_flags: list[SensitivityFlag] = Field(default_factory=list)
     tombstone: bool = False
+    valid_from: str | None = None
+    valid_until: str | None = None
+    never_true: bool = False
+
+    @model_validator(mode="after")
+    def _interval_order(self) -> Memory:
+        validate_interval(self.valid_from, self.valid_until)
+        return self

@@ -23,7 +23,7 @@ from pcl_core.schema.contract import (
     SituationRef,
 )
 from pcl_core.schema.grant import Grant, GrantStatus
-from pcl_core.timeutil import now_iso
+from pcl_core.timeutil import now_iso, parse_instant, row_is_current
 from pcl_core.vault.objects import ObjectStore
 
 MEMORY_INLINE_CAP = 10
@@ -67,9 +67,9 @@ def _body(obj: dict[str, Any]) -> dict[str, Any]:
         keys = ("title", "outcome", "status", "horizon")
         return {k: obj.get(k) for k in keys if obj.get(k) is not None}
     if kind == "preference":
-        return {k: obj.get(k) for k in ("key", "value", "rationale")}
+        return {k: obj.get(k) for k in ("key", "value", "rationale", "valid_from", "valid_until")}
     if kind == "memory":
-        return {k: obj.get(k) for k in ("statement", "kind")}
+        return {k: obj.get(k) for k in ("statement", "kind", "valid_from", "valid_until")}
     if kind == "decision":
         keys = ("title", "chosen_option", "alternatives", "rationale", "status")
         return {k: obj.get(k) for k in keys}
@@ -124,6 +124,7 @@ def assemble_contract(
 ) -> ContextContract:
     cap_for = cap_for or _cap_default
     tokens = significant_tokens(query.purpose)
+    eval_at = parse_instant(query.as_of) if query.as_of else datetime.now(UTC)
     omission_counts: dict[OmissionCategory, int] = defaultdict(int)
     active_grants = [g for g in grants if g.status == GrantStatus.ACTIVE]
 
@@ -260,12 +261,16 @@ def assemble_contract(
         pref_rows = [
             p
             for p in store.list("preference")
-            if (p.get("project_id") in (None, anchor_id)) and allowed(p, eval_project)
+            if (p.get("project_id") in (None, anchor_id))
+            and row_is_current(p, eval_at)
+            and allowed(p, eval_project)
         ]
         mem_rows = [
             m
             for m in store.list("memory", project_id=anchor_id)
-            if not m.get("tombstone") and allowed(m, eval_project)
+            if not m.get("tombstone")
+            and row_is_current(m, eval_at)
+            and allowed(m, eval_project)
         ]
         dec_rows = [
             d for d in store.list("decision", project_id=anchor_id) if allowed(d, eval_project)

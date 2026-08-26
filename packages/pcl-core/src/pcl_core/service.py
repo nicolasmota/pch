@@ -34,7 +34,7 @@ from pcl_core.schema.memory import Memory
 from pcl_core.schema.metadata import Authority, EntityType
 from pcl_core.schema.proposal import ProposalStatus
 from pcl_core.schema.state import SharedState, StateVisibility
-from pcl_core.timeutil import now_iso
+from pcl_core.timeutil import now_iso, row_is_current, validate_interval
 from pcl_core.vault.blobs import BlobStore
 from pcl_core.vault.engine import Engine
 from pcl_core.vault.keys import load_or_create_key
@@ -176,18 +176,45 @@ class Hub:
         payload["id"] = extra.get("id") or payload["id"]
         payload["type"] = type_
         payload["owner"] = owner
+        if type_ in ("preference", "memory"):
+            payload.setdefault("valid_from", payload["created_at"])
+            payload.setdefault("valid_until", None)
+            payload.setdefault("never_true", False)
         return payload
+
+    def _assert_interval(self, payload: dict[str, Any]) -> None:
+        try:
+            validate_interval(payload.get("valid_from"), payload.get("valid_until"))
+        except ValueError as exc:
+            raise ValidationFailed(str(exc)) from exc
+
+    def _current_preference_for_key(self, key: str, *, exclude_id: str | None = None) -> dict | None:
+        at = datetime.now(UTC)
+        for row in self.store.list("preference"):
+            if row.get("key") != key or row["id"] == exclude_id:
+                continue
+            if row_is_current(row, at):
+                return row
+        return None
 
     def create(self, type_: str, body: dict[str, Any], actor: str = OWNER) -> dict:
         with self.engine.tx():
             payload = self._base(type_, body)
             payload["authority"] = body.get("authority", "user_confirmed")
+            if type_ in ("preference", "memory"):
+                self._assert_interval(payload)
+            if type_ == "preference" and self._current_preference_for_key(
+                payload.get("key") or ""
+            ):
+                raise ValidationFailed(
+                    "a current preference with this key already exists; supersede it"
+                )
             stored = self.store.put(payload, new=True)
             self.ledger.append(EventKind.OBJECT_WRITE, actor, f"Created {type_}", [stored["id"]])
             return stored
 
-    def get(self, obj_id: str) -> dict:
-        return self.store.get(obj_id)
+    def get(self, obj_id: str, include_deleted: bool = False) -> dict:
+        return self.store.get(obj_id, include_deleted=include_deleted)
 
     def list(self, type_: str | None = None, project_id: str | None = None) -> list[dict]:
         return self.store.list(type_, project_id)
@@ -202,9 +229,69 @@ class Hub:
             merged["version"] = int(current.get("version", 1)) + 1
             if actor == OWNER:
                 merged["authority"] = "user_confirmed"
+            if current.get("type") in ("preference", "memory"):
+                self._assert_interval(merged)
             stored = self.store.put(merged)
             self.ledger.append(EventKind.OBJECT_WRITE, actor, f"Updated {current['type']}", [obj_id])
             return stored
+
+    def supersede(self, obj_id: str, body: dict[str, Any], actor: str = OWNER) -> dict:
+        with self.engine.tx():
+            current = self.store.get(obj_id)
+            if current.get("type") not in ("preference", "memory"):
+                raise ValidationFailed("only preferences and memories can be superseded")
+            now = now_iso()
+            if not row_is_current(current, datetime.now(UTC)):
+                raise ValidationFailed("target is not current")
+            predecessor = {
+                **current,
+                "valid_until": now,
+                "version": int(current.get("version", 1)) + 1,
+            }
+            if actor == OWNER:
+                predecessor["authority"] = "user_confirmed"
+            pred_stored = self.store.put(predecessor)
+            skip = {"id", "version", "created_at", "updated_at"}
+            extra = {k: v for k, v in current.items() if k not in skip}
+            extra.update(body)
+            extra.pop("id", None)
+            extra["valid_from"] = now
+            extra["valid_until"] = None
+            extra["never_true"] = False
+            if actor == OWNER:
+                extra["authority"] = "user_confirmed"
+            else:
+                extra["authority"] = extra.get("authority", "user_confirmed")
+            successor = self.create(current["type"], extra, actor=actor)
+            self.ledger.append(
+                EventKind.OBJECT_WRITE,
+                actor,
+                f"Superseded {current['type']}",
+                [pred_stored["id"], successor["id"]],
+                extra={"supersedes": pred_stored["id"], "successor": successor["id"]},
+            )
+            return {"predecessor": pred_stored, "successor": successor}
+
+    def retract_never_true(self, obj_id: str, actor: str = OWNER) -> dict:
+        with self.engine.tx():
+            current = self.store.get(obj_id)
+            if current.get("type") not in ("preference", "memory"):
+                raise ValidationFailed("only preferences and memories can be retracted")
+            current["never_true"] = True
+            current["version"] = int(current.get("version", 1)) + 1
+            self.store.put(current)
+            stored = self.store.tombstone(obj_id)
+            stored["never_true"] = True
+            self.ledger.append(
+                EventKind.OBJECT_WRITE,
+                actor,
+                f"Retracted {current['type']} as never true",
+                [obj_id],
+            )
+            return stored
+
+    def list_truth(self, type_: str) -> list[dict]:
+        return [row for row in self.store.list(type_) if not row.get("never_true")]
 
     def delete(self, obj_id: str, actor: str = OWNER) -> dict:
         with self.engine.tx():
@@ -357,10 +444,19 @@ class Hub:
         purpose: str,
         subject_ref: str | None = None,
         max_items: int | None = None,
+        as_of: str | None = None,
     ) -> dict:
         try:
-            query = ContextQuery(purpose=purpose, subject_ref=subject_ref, max_items=max_items)
+            query = ContextQuery(
+                purpose=purpose, subject_ref=subject_ref, max_items=max_items, as_of=as_of
+            )
         except ValidationError as exc:
+            loc = ""
+            errs = exc.errors() if hasattr(exc, "errors") else []
+            if errs:
+                loc = ".".join(str(p) for p in errs[0].get("loc", ()))
+            if loc == "as_of" or "as_of" in str(exc):
+                raise ValidationFailed("as_of is invalid") from exc
             raise ValidationFailed("purpose is required") from exc
         if actor != OWNER:
             conn = self.store.get(actor)
@@ -714,8 +810,18 @@ class Hub:
                 else:
                     mem["authority"] = "agent_inferred"
                 mem["type"] = "memory"
-                mem.setdefault("id", new_id("memory"))
-                stored = self.store.put(mem)
+                stored = None
+                subject = mem.get("subject_ref")
+                if subject:
+                    at = datetime.now(UTC)
+                    for row in self.store.list("memory"):
+                        if row.get("subject_ref") == subject and row_is_current(row, at):
+                            result = self.supersede(row["id"], mem)
+                            stored = result["successor"]
+                            break
+                if stored is None:
+                    mem.setdefault("id", new_id("memory"))
+                    stored = self.store.put(mem)
                 p["status"] = "accepted"
                 self.store.put(p)
                 self.ledger.append(EventKind.MEMORY_ACCEPTED, OWNER, "proposal accepted", [stored["id"]])

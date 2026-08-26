@@ -17,7 +17,13 @@ def test_contract_assembly_under_two_seconds(hub):
         if i < 50:
             hub.create(
                 "memory",
-                {"statement": f"travel packing item {i} for the Europe trip", "kind": "semantic", "project_id": pid},
+                {
+                    "statement": f"travel packing item {i} for the Europe trip",
+                    "kind": "semantic",
+                    "project_id": pid,
+                    "valid_from": "2020-01-01T00:00:00Z",
+                    "valid_until": "2021-01-01T00:00:00Z",
+                },
             )
     t0 = time.perf_counter()
     contract = hub.get_context_contract(OWNER, "continue planning the trip")

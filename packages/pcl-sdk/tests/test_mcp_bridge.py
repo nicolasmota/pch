@@ -7,6 +7,8 @@ def test_tools_list_parity():
     reply = handle_message({"jsonrpc": "2.0", "id": 1, "method": "tools/list"}, "http://x", "tok")
     names = [t["name"] for t in reply["result"]["tools"]]
     assert names == TOOL_NAMES
+    contract = next(t for t in reply["result"]["tools"] if t["name"] == "get_context_contract")
+    assert "as_of" in contract["inputSchema"]["properties"]
 
 
 def test_revocation_and_unreachable_mapping():

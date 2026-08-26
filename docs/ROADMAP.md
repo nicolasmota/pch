@@ -133,7 +133,7 @@ Fila ordenada. Um epic por vez vira spec. Cada spec filha deve ser testável soz
 
 ### E2 — Validade Temporal
 
-**Spec:** —
+**Spec:** `specs/005-temporal-validity/`
 
 **Problema.** Preferências e fatos mudam. Hoje existe versão e retention, mas ainda não há representação clara de “o que vale agora” vs “o que foi verdade”.
 
@@ -258,3 +258,4 @@ A origem da tese é o rascunho `personal-context-layer-spec.md`. O Hub (specs 00
 - **2026-08-26** — Gauntlet round 1 — shareable spine; architecture after the fold.
 - **2026-08-26** — Primeira versão do roadmap: tese, 001–003 como passado, E1–E6 como próxima era, horizonte explícito.
 - **2026-08-26** — Evolução conceitual: Product Evolution, Context Problem, Situation, Context Contract, Context Quality, Context Isolation, Personal Intelligence e Personal Agency como camadas explícitas da visão.
+- **2026-08-26** — E2 spawned as `specs/005-temporal-validity/` via speckit-specify.

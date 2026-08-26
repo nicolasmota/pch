@@ -27,6 +27,22 @@ export type Memory = {
   statement: string;
   authority: string;
   kind: string;
+  created_at?: string | null;
+  valid_from?: string | null;
+  valid_until?: string | null;
+  never_true?: boolean;
+};
+
+export type Preference = {
+  id: string;
+  key: string;
+  value: unknown;
+  rationale?: string | null;
+  authority: string;
+  created_at?: string | null;
+  valid_from?: string | null;
+  valid_until?: string | null;
+  never_true?: boolean;
 };
 
 export type MemoryVersion = Memory & {

@@ -6,6 +6,8 @@ from typing import Any
 
 from pydantic import BaseModel, Field, field_validator
 
+from pcl_core.timeutil import parse_instant
+
 
 class OmissionCategory(StrEnum):
     SCOPE_NOT_GRANTED = "scope_not_granted"
@@ -18,6 +20,7 @@ class ContextQuery(BaseModel):
     purpose: str
     subject_ref: str | None = None
     max_items: int | None = Field(default=None, ge=1)
+    as_of: str | None = None
 
     model_config = {"extra": "forbid"}
 
@@ -27,6 +30,20 @@ class ContextQuery(BaseModel):
         stripped = value.strip()
         if not stripped:
             raise ValueError("purpose is required")
+        return stripped
+
+    @field_validator("as_of")
+    @classmethod
+    def as_of_must_be_instant(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        stripped = value.strip()
+        if not stripped:
+            return None
+        try:
+            parse_instant(stripped)
+        except ValueError as exc:
+            raise ValueError("as_of must be an ISO-8601 UTC instant") from exc
         return stripped
 
 
