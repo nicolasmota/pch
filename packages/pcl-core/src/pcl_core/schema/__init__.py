@@ -3,6 +3,18 @@ from pcl_core.schema.approval import Approval, DecisionKind
 from pcl_core.schema.artifact import Artifact, ArtifactKind
 from pcl_core.schema.audit import AuditEvent, EventKind
 from pcl_core.schema.conflict import Conflict, ConflictKind, ConflictStatus
+from pcl_core.schema.contract import (
+    Citation,
+    ConflictPair,
+    ContextContract,
+    ContextQuery,
+    ContractItem,
+    ItemRef,
+    OmissionCategory,
+    OmissionNote,
+    ScopeSummary,
+    SituationRef,
+)
 from pcl_core.schema.connection import AgentConnection, ConnectionStatus
 from pcl_core.schema.connector import ConnectorAccount, ConnectorKind, ConnectorProvider, ConnectorStatus
 from pcl_core.schema.event import CalendarEvent, CalendarEventStatus
@@ -72,8 +84,13 @@ __all__ = [
     "ConnectorKind",
     "ConnectorProvider",
     "ConnectorStatus",
+    "Citation",
+    "ConflictPair",
+    "ContextContract",
     "ContextManifest",
+    "ContextQuery",
     "ContextSpace",
+    "ContractItem",
     "Decision",
     "DecisionKind",
     "DisclosedRef",
@@ -92,10 +109,13 @@ __all__ = [
     "PluginState",
     "ProducesPermission",
     "IntentStatus",
+    "ItemRef",
     "ManifestStatus",
     "Memory",
     "MemoryKind",
     "MemoryProposal",
+    "OmissionCategory",
+    "OmissionNote",
     "PRESETS",
     "Person",
     "Preference",
@@ -106,7 +126,9 @@ __all__ = [
     "ResolutionChoice",
     "Retention",
     "RetentionMode",
+    "ScopeSummary",
     "SensitivityFlag",
+    "SituationRef",
     "SharedState",
     "StagingStatus",
     "StateVisibility",

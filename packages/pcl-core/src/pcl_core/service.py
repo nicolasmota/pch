@@ -7,6 +7,8 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
+from pydantic import ValidationError
+
 from pcl_core.audit.ledger import Ledger
 from pcl_core.errors import NotFound, PolicyDenied, Revoked, ValidationFailed, VersionConflict
 from pcl_core.ids import new_id
@@ -18,12 +20,14 @@ from pcl_core.policy.grants import grant_from_caps, grant_from_preset
 from pcl_core.retrieval.ask import compose as compose_ask
 from pcl_core.retrieval.ask import retrieve as retrieve_ask
 from pcl_core.retrieval.briefs import project_brief
+from pcl_core.retrieval.contract import assemble_contract
 from pcl_core.retrieval.manifests import build_manifest
 from pcl_core.retrieval.search import citations_for, search as fts_search
 from pcl_core.schema.action import ActionIntent, IntentStatus
 from pcl_core.schema.approval import Approval, DecisionKind
 from pcl_core.schema.audit import EventKind
 from pcl_core.schema.connection import AgentConnection, ConnectionStatus
+from pcl_core.schema.contract import ContextQuery
 from pcl_core.schema.grant import Grant, GrantStatus
 from pcl_core.schema.manifest import ManifestStatus
 from pcl_core.schema.memory import Memory
@@ -331,6 +335,81 @@ class Hub:
             filtered = self.search("", project_id=project_id, actor=actor)["results"]
             related = filtered
         return project_brief(project, related)
+
+    def record_contract_refusal(self, actor: str, purpose: str) -> None:
+        self.ledger.append(
+            EventKind.CONTEXT_CONTRACT,
+            actor,
+            f"contract refused {purpose!r}",
+            extra={
+                "contract_id": None,
+                "purpose": purpose,
+                "status": "refused",
+                "situation": None,
+                "item_refs": [],
+                "omission_categories": [],
+            },
+        )
+
+    def get_context_contract(
+        self,
+        actor: str,
+        purpose: str,
+        subject_ref: str | None = None,
+        max_items: int | None = None,
+    ) -> dict:
+        try:
+            query = ContextQuery(purpose=purpose, subject_ref=subject_ref, max_items=max_items)
+        except ValidationError as exc:
+            raise ValidationFailed("purpose is required") from exc
+        if actor != OWNER:
+            conn = self.store.get(actor)
+            if conn.get("status") == "revoked":
+                self.record_contract_refusal(actor, query.purpose)
+                raise Revoked()
+            grants = self.grants_for(actor)
+            if not any(g.status == GrantStatus.ACTIVE for g in grants):
+                self.record_contract_refusal(actor, query.purpose)
+                raise PolicyDenied("no active grants")
+        else:
+            grants = []
+        contract = assemble_contract(
+            self.store,
+            query,
+            actor=actor,
+            is_owner=actor == OWNER,
+            grants=grants,
+            cap_for=self._cap_for,
+        )
+        item_refs = []
+        for section in (
+            contract.goals,
+            contract.preferences,
+            contract.memories,
+            contract.decisions,
+            contract.constraints,
+            contract.state,
+        ):
+            for item in section:
+                item_refs.append({"id": item.ref.id, "type": item.ref.type})
+        extra = {
+            "contract_id": contract.contract_id,
+            "purpose": contract.purpose,
+            "status": "issued",
+            "situation": contract.situation.project_id if contract.situation else None,
+            "item_refs": item_refs,
+            "omission_categories": [
+                {"category": o.category.value, "count": o.count} for o in contract.omissions
+            ],
+        }
+        self.ledger.append(
+            EventKind.CONTEXT_CONTRACT,
+            actor,
+            f"contract {query.purpose!r}",
+            [r["id"] for r in item_refs],
+            extra=extra,
+        )
+        return contract.model_dump(mode="json")
 
     # --- connections / grants ---
 

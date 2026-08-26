@@ -16,6 +16,7 @@ TOOL_NAMES = [
     "request_approval",
     "propose_action",
     "check_action_status",
+    "get_context_contract",
 ]
 
 TOOL_SCHEMAS: dict[str, dict[str, Any]] = {
@@ -86,6 +87,27 @@ TOOL_SCHEMAS: dict[str, dict[str, Any]] = {
         "type": "object",
         "properties": {"intent_id": {"type": "string"}},
         "required": ["intent_id"],
+    },
+    "get_context_contract": {
+        "type": "object",
+        "additionalProperties": False,
+        "properties": {
+            "purpose": {
+                "type": "string",
+                "minLength": 1,
+                "description": "What the agent is trying to do for the person right now.",
+            },
+            "subject_ref": {
+                "type": ["string", "null"],
+                "description": "Optional Project id to anchor the situation.",
+            },
+            "max_items": {
+                "type": ["integer", "null"],
+                "minimum": 1,
+                "description": "Optional per-category cap; engine sufficiency caps still apply.",
+            },
+        },
+        "required": ["purpose"],
     },
 }
 

@@ -1,0 +1,123 @@
+from __future__ import annotations
+
+import pytest
+from pcl_core.errors import ValidationFailed
+from pcl_core.schema.contract import ContextQuery
+from pcl_core.service import OWNER
+from pcl_core.testing.trip_seed import drop_london, seed_trip
+
+REQUIRED_FIELDS = {
+    "contract_id",
+    "purpose",
+    "situation",
+    "candidates",
+    "goals",
+    "preferences",
+    "memories",
+    "decisions",
+    "constraints",
+    "state",
+    "references",
+    "conflicts",
+    "granted_scope",
+    "omissions",
+    "assembled_at",
+}
+
+
+def _ids(items: list[dict]) -> set[str]:
+    return {item["ref"]["id"] for item in items}
+
+
+def test_trip_purpose_selects_anchor_and_cites(hub):
+    seed = seed_trip(hub)
+    contract = hub.get_context_contract(OWNER, "continue planning the trip")
+    assert set(contract) >= REQUIRED_FIELDS
+    assert contract["situation"]["project_id"] == seed["project"]["id"]
+    assert any("10-day" in g["body"].get("title", "") for g in contract["goals"])
+    assert any(p["body"].get("key") == "travel.budget" for p in contract["preferences"])
+    assert any("two travelers" in m["body"].get("statement", "").lower() for m in contract["memories"])
+    assert any("Amsterdam" in (d["body"].get("alternatives") or []) for d in contract["decisions"])
+    for section in ("goals", "preferences", "memories", "decisions", "constraints", "state"):
+        for item in contract[section]:
+            assert item["citation"], f"uncited {section} item {item['ref']['id']}"
+            assert any(c["id"] == item["ref"]["id"] for c in item["citation"])
+
+
+def test_empty_purpose_raises(hub):
+    seed_trip(hub)
+    with pytest.raises(ValidationFailed):
+        hub.get_context_contract(OWNER, "")
+
+
+def test_no_match_returns_minimal_contract(hub):
+    seed_trip(hub)
+    contract = hub.get_context_contract(OWNER, "xyzzy-no-such-situation-zzzz")
+    assert contract["situation"] is None
+    assert contract["goals"] == []
+    assert contract["memories"] == []
+    assert contract["granted_scope"]["grant_id"]
+
+
+def test_tie_returns_candidates_not_merged(hub):
+    hub.create("project", {"title": "Alpha Trip Planning", "charter": "planning trip", "status": "active"})
+    hub.create("project", {"title": "Beta Trip Planning", "charter": "planning trip", "status": "active"})
+    contract = hub.get_context_contract(OWNER, "planning trip")
+    assert contract["situation"] is None
+    titles = {c["title"] for c in contract["candidates"]}
+    assert "Alpha Trip Planning" in titles
+    assert "Beta Trip Planning" in titles
+    assert contract["goals"] == []
+    assert contract["memories"] == []
+
+
+def test_conflicts_listed_not_resolved(hub):
+    seed_trip(hub)
+    contract = hub.get_context_contract(OWNER, "continue planning the trip")
+    assert contract["conflicts"]
+    assert all(len(c["item_ids"]) >= 2 for c in contract["conflicts"])
+    values = [p["body"]["value"] for p in contract["preferences"] if p["body"].get("key") == "flights.red_eye"]
+    assert "avoid" in values
+    assert "ok-if-cheaper" in values
+
+
+def test_correction_uses_live_versions_only(hub):
+    seed = seed_trip(hub)
+    before = hub.get_context_contract(OWNER, "continue planning the trip")
+    drop_london(hub, seed)
+    after = hub.get_context_contract(OWNER, "continue planning the trip")
+    titles = [d["body"].get("title") for d in after["decisions"]]
+    assert "Dropped London" in titles
+    chosen = [d["body"].get("chosen_option") for d in after["decisions"]]
+    assert "Amsterdam" in chosen
+    # superseded comparing decision is still live (not deleted); dropped is additional
+    assert before["contract_id"] != after["contract_id"]
+
+
+def test_subject_ref_anchors(hub):
+    seed = seed_trip(hub)
+    other = hub.create("project", {"title": "Work Roadmap", "charter": "Q3", "status": "active"})
+    contract = hub.get_context_contract(
+        OWNER, "continue planning the trip", subject_ref=seed["project"]["id"]
+    )
+    assert contract["situation"]["project_id"] == seed["project"]["id"]
+    assert other["id"] not in {c["project_id"] for c in contract["candidates"]}
+
+
+def test_query_model_roundtrip():
+    q = ContextQuery(purpose="continue planning the trip", subject_ref=None, max_items=5)
+    assert q.max_items == 5
+
+
+def test_sufficiency_caps_overflow_to_references(hub):
+    seed = seed_trip(hub)
+    pid = seed["project"]["id"]
+    for i in range(15):
+        hub.create(
+            "memory",
+            {"statement": f"Trip packing note {i} about Europe travel", "kind": "semantic", "project_id": pid},
+        )
+    contract = hub.get_context_contract(OWNER, "continue planning the trip")
+    assert len(contract["memories"]) <= 10
+    overflow = [r for r in contract["references"] if r["type"] == "memory"]
+    assert overflow

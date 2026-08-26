@@ -42,6 +42,15 @@ def attach_tools(mcp, hub: Hub) -> None:
         return hub.get_state(key, actor)
 
     @mcp.tool()
+    def get_context_contract(
+        purpose: str = "",
+        subject_ref: str | None = None,
+        max_items: int | None = None,
+    ) -> dict:
+        actor = mcp._current_actor
+        return hub.get_context_contract(actor, purpose, subject_ref, max_items)
+
+    @mcp.tool()
     def request_approval(intent_summary: str, rationale: str, impact: str) -> dict:
         actor = mcp._current_actor
         return hub.propose_action(

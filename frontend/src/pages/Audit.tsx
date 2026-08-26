@@ -8,6 +8,30 @@ import PageHeader from "../components/PageHeader";
 import Spinner from "../components/Spinner";
 import { useApi } from "../hooks/useApi";
 
+function ContractIssuance({ event }: { event: AuditEvent }) {
+  const extra = event.extra ?? {};
+  const refs = extra.item_refs ?? [];
+  const omissions = extra.omission_categories ?? [];
+  return (
+    <div className="space-y-1">
+      <p className="text-ink">
+        Context contract {extra.status ?? "issued"}
+        {extra.purpose ? ` · ${extra.purpose}` : ""}
+      </p>
+      {refs.length > 0 ? (
+        <p className="text-xs text-muted">
+          Items: {refs.map((r) => `${r.type}:${r.id}`).join(", ")}
+        </p>
+      ) : null}
+      {omissions.length > 0 ? (
+        <p className="text-xs text-muted">
+          Omitted: {omissions.map((o) => `${o.category} (${o.count})`).join(", ")}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
 export default function Audit() {
   const { data, loading, error } = useApi<AuditEvent[]>(() => api("/v1/events"));
   const [verify, setVerify] = useState<unknown>(null);
@@ -45,8 +69,13 @@ export default function Audit() {
             <li key={e.seq} className="text-sm">
               <p className="text-xs text-muted">
                 {e.created_at} · {e.actor}
+                {e.kind === "context.contract" ? " · context.contract" : ""}
               </p>
-              <p className="text-ink">{e.summary_human}</p>
+              {e.kind === "context.contract" ? (
+                <ContractIssuance event={e} />
+              ) : (
+                <p className="text-ink">{e.summary_human}</p>
+              )}
             </li>
           ))}
         </ol>

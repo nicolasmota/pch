@@ -22,8 +22,8 @@ description: "Task list for Context Engine"
 
 **Purpose**: New module files and a reusable trip-demo seed used by later tests
 
-- [ ] T001 Create empty modules `packages/pcl-core/src/pcl_core/schema/contract.py` and `packages/pcl-core/src/pcl_core/retrieval/contract.py` (no logic yet)
-- [ ] T002 [P] Add trip-demo seed helper (Project + Goal + Preferences + Decisions Amsterdam/London + Memories + SharedState) in `packages/pcl-core/tests/helpers/trip_seed.py`
+- [x] T001 Create empty modules `packages/pcl-core/src/pcl_core/schema/contract.py` and `packages/pcl-core/src/pcl_core/retrieval/contract.py` (no logic yet)
+- [x] T002 [P] Add trip-demo seed helper (Project + Goal + Preferences + Decisions Amsterdam/London + Memories + SharedState) in `packages/pcl-core/src/pcl_core/testing/trip_seed.py`
 
 ---
 
@@ -33,10 +33,10 @@ description: "Task list for Context Engine"
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T003 Implement Pydantic models `ContextQuery`, `ContextContract`, `ContractItem`, `OmissionNote`, `SituationRef`, `ItemRef`, `ConflictPair`, `ScopeSummary` in `packages/pcl-core/src/pcl_core/schema/contract.py` matching `specs/004-context-engine/data-model.md` (empty `purpose` fails validation; `citation` min length 1; omission has category/label/count only)
-- [ ] T004 [P] Add `EventKind.CONTEXT_CONTRACT = "context.contract"` in `packages/pcl-core/src/pcl_core/schema/audit.py`
-- [ ] T005 Export contract models from `packages/pcl-core/src/pcl_core/schema/__init__.py` without adding them to `TYPE_MODELS`
-- [ ] T006 Schema unit tests (empty purpose rejected; citation required; omission fields cannot carry item ids/titles) in `packages/pcl-core/tests/test_contract_schema.py`
+- [x] T003 Implement Pydantic models `ContextQuery`, `ContextContract`, `ContractItem`, `OmissionNote`, `SituationRef`, `ItemRef`, `ConflictPair`, `ScopeSummary` in `packages/pcl-core/src/pcl_core/schema/contract.py` matching `specs/004-context-engine/data-model.md` (empty `purpose` fails validation; `citation` min length 1; omission has category/label/count only)
+- [x] T004 [P] Add `EventKind.CONTEXT_CONTRACT = "context.contract"` in `packages/pcl-core/src/pcl_core/schema/audit.py`
+- [x] T005 Export contract models from `packages/pcl-core/src/pcl_core/schema/__init__.py` without adding them to `TYPE_MODELS`
+- [x] T006 Schema unit tests (empty purpose rejected; citation required; omission fields cannot carry item ids/titles) in `packages/pcl-core/tests/test_contract_schema.py`
 
 **Checkpoint**: Models validate; `context.contract` is a legal event kind; no vault table or TYPE_MODELS change
 
@@ -50,16 +50,16 @@ description: "Task list for Context Engine"
 
 ### Tests for User Story 1 ⚠️ write first, watch them fail
 
-- [ ] T007 [P] [US1] Assembly unit tests (anchor selection, FTS fallback, tie → candidates not merged, ranking + caps, conflicts listed not resolved, empty/minimal contract, citations present, live versions only) in `packages/pcl-core/tests/test_contract_assembly.py`
-- [ ] T008 [P] [US1] MCP/HTTP contract tests vs `specs/004-context-engine/contracts/context-contract.md` (request schema, 200 empty contract, 422 empty purpose, response required fields, B4/B5/B6/B12) in `packages/pcl-server/tests/contract/test_mcp_contract.py`
-- [ ] T009 [P] [US1] Killer-demo integration test: two agents, same purpose, identical substance, then "dropped London" correction reflected (SC-001, SC-002, SC-004) in `packages/pcl-server/tests/contract/test_trip_handoff.py`
+- [x] T007 [P] [US1] Assembly unit tests (anchor selection, FTS fallback, tie → candidates not merged, ranking + caps, conflicts listed not resolved, empty/minimal contract, citations present, live versions only) in `packages/pcl-core/tests/test_contract_assembly.py`
+- [x] T008 [P] [US1] MCP/HTTP contract tests vs `specs/004-context-engine/contracts/context-contract.md` (request schema, 200 empty contract, 422 empty purpose, response required fields, B4/B5/B6/B12) in `packages/pcl-server/tests/contract/test_mcp_contract.py`
+- [x] T009 [P] [US1] Killer-demo integration test: two agents, same purpose, identical substance, then "dropped London" correction reflected (SC-001, SC-002, SC-004) in `packages/pcl-server/tests/contract/test_trip_handoff.py`
 
 ### Implementation for User Story 1
 
-- [ ] T010 [US1] Implement situation selection + category assembly + sufficiency caps + conflict pairing in `packages/pcl-core/src/pcl_core/retrieval/contract.py` (reuse FTS5, `DefaultRanker`, `significant_tokens`, `citations_for`; D2/D3/D5/D6)
-- [ ] T011 [US1] Add `Hub.get_context_contract()` in `packages/pcl-core/src/pcl_core/service.py`: call assembly, append `EventKind.CONTEXT_CONTRACT` with `status: issued`, `contract_id`, purpose, item refs (no bodies), omission categories
-- [ ] T012 [US1] Register MCP tool `get_context_contract(purpose, subject_ref=None, max_items=None)` in `packages/pcl-server/src/pcl_server/mcp/tools_context.py` using `mcp._current_actor`
-- [ ] T013 [US1] Add `get_context_contract` to `TOOL_NAMES` and `TOOL_SCHEMAS` in `packages/pcl-sdk/src/pcl_sdk/mcp_bridge.py` (request schema from the contract doc); extend `packages/pcl-sdk/tests/test_mcp_bridge.py` so `tools/list` parity includes the new tool
+- [x] T010 [US1] Implement situation selection + category assembly + sufficiency caps + conflict pairing in `packages/pcl-core/src/pcl_core/retrieval/contract.py` (reuse FTS5, `DefaultRanker`, `significant_tokens`, `citations_for`; D2/D3/D5/D6)
+- [x] T011 [US1] Add `Hub.get_context_contract()` in `packages/pcl-core/src/pcl_core/service.py`: call assembly, append `EventKind.CONTEXT_CONTRACT` with `status: issued`, `contract_id`, purpose, item refs (no bodies), omission categories
+- [x] T012 [US1] Register MCP tool `get_context_contract(purpose, subject_ref=None, max_items=None)` in `packages/pcl-server/src/pcl_server/mcp/tools_context.py` using `mcp._current_actor`
+- [x] T013 [US1] Add `get_context_contract` to `TOOL_NAMES` and `TOOL_SCHEMAS` in `packages/pcl-sdk/src/pcl_sdk/mcp_bridge.py` (request schema from the contract doc); extend `packages/pcl-sdk/tests/test_mcp_bridge.py` so `tools/list` parity includes the new tool
 
 **Checkpoint**: Killer demo passes through MCP; two agents get the same package; empty purpose 422; no-match returns a valid empty contract, not a dump
 
@@ -73,13 +73,13 @@ description: "Task list for Context Engine"
 
 ### Tests for User Story 2 ⚠️ write first, watch them fail
 
-- [ ] T014 [P] [US2] Unit tests for grant bounding and aggregated omission notes (no withheld ids/titles/content in `omissions`) in `packages/pcl-core/tests/test_contract_grants.py`
-- [ ] T015 [P] [US2] Isolation tests (personal vs work grants, 0 leakage, omission present when relevant material withheld, revoked grant refused) marked `forbidden_context` in `packages/pcl-server/tests/forbidden_context/test_contract_isolation.py`
+- [x] T014 [P] [US2] Unit tests for grant bounding and aggregated omission notes (no withheld ids/titles/content in `omissions`) in `packages/pcl-core/tests/test_contract_grants.py`
+- [x] T015 [P] [US2] Isolation tests (personal vs work grants, 0 leakage, omission present when relevant material withheld, revoked grant refused) marked `forbidden_context` in `packages/pcl-server/tests/forbidden_context/test_contract_isolation.py`
 
 ### Implementation for User Story 2
 
-- [ ] T016 [US2] Filter every candidate through `policy.evaluate()` and aggregate DENY/REDACT into `OmissionNote`s (`scope_not_granted`, `classification_ceiling`, `capability_missing`, `policy_exclusion`) in `packages/pcl-core/src/pcl_core/retrieval/contract.py` (D4; out-of-scope `subject_ref` ignored with an omission, not an error)
-- [ ] T017 [US2] Append `context.contract` with `status: refused` on unauthenticated/revoked requests in `packages/pcl-core/src/pcl_core/service.py` (and the MCP/auth path that already returns 401/403); empty `purpose` stays 422 with no ledger event (B10)
+- [x] T016 [US2] Filter every candidate through `policy.evaluate()` and aggregate DENY/REDACT into `OmissionNote`s (`scope_not_granted`, `classification_ceiling`, `capability_missing`, `policy_exclusion`) in `packages/pcl-core/src/pcl_core/retrieval/contract.py` (D4; out-of-scope `subject_ref` ignored with an omission, not an error)
+- [x] T017 [US2] Append `context.contract` with `status: refused` on unauthenticated/revoked requests in `packages/pcl-core/src/pcl_core/service.py` (and the MCP/auth path that already returns 401/403); empty `purpose` stays 422 with no ledger event (B10)
 
 **Checkpoint**: Isolation test green (SC-003); omissions never leak withheld content; revoked grant is auditable
 
@@ -93,12 +93,12 @@ description: "Task list for Context Engine"
 
 ### Tests for User Story 3 ⚠️ write first, watch them fail
 
-- [ ] T018 [P] [US3] Events API tests: `GET /v1/events?kind=context.contract` returns `extra` with `contract_id`, `purpose`, `status`, `item_refs`, `omission_categories` (SC-005) in `packages/pcl-server/tests/contract/test_contract_audit.py`
+- [x] T018 [P] [US3] Events API tests: `GET /v1/events?kind=context.contract` returns `extra` with `contract_id`, `purpose`, `status`, `item_refs`, `omission_categories` (SC-005) in `packages/pcl-server/tests/contract/test_contract_audit.py`
 
 ### Implementation for User Story 3
 
-- [ ] T019 [US3] Extend `AuditEvent` in `frontend/src/api/types.ts` with `kind` (already present) and `extra` so the UI can read issuance fields
-- [ ] T020 [US3] Render `context.contract` events in `frontend/src/pages/Audit.tsx` (agent, purpose, status, item refs, omission categories, timestamp) without a new endpoint
+- [x] T019 [US3] Extend `AuditEvent` in `frontend/src/api/types.ts` with `kind` (already present) and `extra` so the UI can read issuance fields
+- [x] T020 [US3] Render `context.contract` events in `frontend/src/pages/Audit.tsx` (agent, purpose, status, item refs, omission categories, timestamp) without a new endpoint
 
 **Checkpoint**: Person can inspect every issuance from Audit; correction of a source object is visible in the next contract (covered by T009/T011)
 
@@ -108,10 +108,10 @@ description: "Task list for Context Engine"
 
 **Purpose**: Quickstart, perf, and repo-wide checks after the three stories
 
-- [ ] T021 Write `specs/004-context-engine/quickstart.md` covering seed trip vault, pair two agents, call `get_context_contract`, drop London, inspect Audit
-- [ ] T022 [P] Perf test: assembly < 2 s on a seeded vault of a few thousand objects, no network egress during assembly (SC-006, B7) marked `perf` in `packages/pcl-core/tests/test_contract_perf.py`
-- [ ] T023 [P] Sufficiency assertion on the trip fixture: inlined memories ≤ cap; overflow appears only in `references` (SC-007) in `packages/pcl-core/tests/test_contract_assembly.py`
-- [ ] T024 Run `make lint` and `make test`; fix regressions in touched packages (`pcl-core`, `pcl-server`, `pcl-sdk`, `frontend`)
+- [x] T021 Write `specs/004-context-engine/quickstart.md` covering seed trip vault, pair two agents, call `get_context_contract`, drop London, inspect Audit
+- [x] T022 [P] Perf test: assembly < 2 s on a seeded vault of a few thousand objects, no network egress during assembly (SC-006, B7) marked `perf` in `packages/pcl-core/tests/test_contract_perf.py`
+- [x] T023 [P] Sufficiency assertion on the trip fixture: inlined memories ≤ cap; overflow appears only in `references` (SC-007) in `packages/pcl-core/tests/test_contract_assembly.py`
+- [x] T024 Run `make lint` and `make test`; fix regressions in touched packages (`pcl-core`, `pcl-server`, `pcl-sdk`, `frontend`)
 
 ---
 

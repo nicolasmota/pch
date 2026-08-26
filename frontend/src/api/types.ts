@@ -99,6 +99,14 @@ export type AuditEvent = {
   summary_human: string;
   created_at: string;
   kind: string;
+  extra?: {
+    contract_id?: string | null;
+    purpose?: string;
+    status?: string;
+    situation?: string | null;
+    item_refs?: { id: string; type: string }[];
+    omission_categories?: { category: string; count: number }[];
+  };
 };
 
 export type SharedState = {

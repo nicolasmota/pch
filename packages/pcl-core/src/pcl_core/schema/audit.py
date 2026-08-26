@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field
 class EventKind(StrEnum):
     CONTEXT_REQUEST = "context.request"
     CONTEXT_DISCLOSE = "context.disclose"
+    CONTEXT_CONTRACT = "context.contract"
     POLICY_DECISION = "policy.decision"
     MEMORY_PROPOSED = "memory.proposed"
     MEMORY_ACCEPTED = "memory.accepted"
