@@ -3,8 +3,10 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import sys
 
 from pcl_sdk.client import Client
+from pcl_sdk.devloop.cli import build_parser, dispatch_loop
 from pcl_sdk.mcp_bridge import main as bridge_main
 from pcl_sdk.plugin_kit import main as plugin_kit_main
 
@@ -22,6 +24,11 @@ def demo(base: str, code: str | None, token: str | None) -> None:
 
 
 def main(argv: list[str] | None = None) -> None:
+    seq = list(argv) if argv is not None else sys.argv[1:]
+    if seq[:1] == ["loop"]:
+        parser = build_parser()
+        args = parser.parse_args(seq)
+        raise SystemExit(dispatch_loop(args))
     parser = argparse.ArgumentParser(prog="pcl-sdk")
     sub = parser.add_subparsers(dest="cmd")
     demo_p = sub.add_parser("demo-agent")
@@ -33,7 +40,7 @@ def main(argv: list[str] | None = None) -> None:
     bridge_p.add_argument("--base", default=os.environ.get("PCH_BASE", "http://127.0.0.1:8765"))
     plugin_p = sub.add_parser("plugin")
     plugin_p.add_argument("plugin_args", nargs=argparse.REMAINDER)
-    args = parser.parse_args(argv)
+    args = parser.parse_args(seq)
     if args.cmd == "demo-agent":
         demo(args.base, args.code, args.token or None)
         return

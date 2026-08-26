@@ -147,7 +147,7 @@ Fila ordenada. Um epic por vez vira spec. Cada spec filha deve ser testável soz
 
 ### E3 — Estado de Projeto e Intent de Situação
 
-**Spec:** —
+**Spec:** `specs/007-situation-state-intent/`
 
 **Problema.** `SharedState` é handoff com TTL. `ActionIntent` é aprovação. Falta representar fases (`Planning`, `Comparing itineraries`, `Waiting for approval`, `Choosing hotel`) e “o que a pessoa está tentando fazer agora?”.
 
@@ -254,6 +254,7 @@ A origem da tese é o rascunho `personal-context-layer-spec.md`. O Hub (specs 00
 
 ## Changelog
 
+- **2026-08-26** — E3 spawned as `specs/007-situation-state-intent/` via speckit-loop `--roadmap` after 006 sequencer shipped.
 - **2026-08-26** — Gauntlet round 2 — VISION.md é só a espinha compartilhavel; este arquivo guarda operação.
 - **2026-08-26** — Gauntlet round 1 — shareable spine; architecture after the fold.
 - **2026-08-26** — Primeira versão do roadmap: tese, 001–003 como passado, E1–E6 como próxima era, horizonte explícito.
