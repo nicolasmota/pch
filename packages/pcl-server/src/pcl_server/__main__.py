@@ -1,0 +1,61 @@
+from __future__ import annotations
+
+import argparse
+import os
+from pathlib import Path
+
+import uvicorn
+
+from pcl_server.rest.app import dev_app
+
+
+def _reload_dirs() -> list[str]:
+    here = Path(__file__).resolve()
+    for parent in here.parents:
+        if (parent / "packages" / "pcl-server").is_dir():
+            dirs = [
+                parent / "packages" / "pcl-core" / "src",
+                parent / "packages" / "pcl-server" / "src",
+                parent / "packages" / "pcl-sdk" / "src",
+                parent / "packages" / "pca" / "src",
+                parent / "apps" / "hub-desktop" / "src",
+                parent / "plugins",
+            ]
+            return [str(path) for path in dirs if path.is_dir()]
+    return []
+
+
+def run_server(host: str, port: int, *, reload: bool) -> None:
+    if reload:
+        uvicorn.run(
+            "pcl_server.rest.app:dev_app",
+            factory=True,
+            host=host,
+            port=port,
+            log_level="info",
+            reload=True,
+            reload_dirs=_reload_dirs() or None,
+            reload_includes=["*.py", "*.toml"],
+            reload_excludes=["*/static/*", "*/__pycache__/*", "*.pyc"],
+        )
+        return
+    uvicorn.run(dev_app(), host=host, port=port, log_level="info")
+
+
+def main(argv: list[str] | None = None) -> None:
+    parser = argparse.ArgumentParser(prog="pcl-server")
+    parser.add_argument("--headless", action="store_true")
+    parser.add_argument("--host", default="127.0.0.1")
+    parser.add_argument("--port", type=int, default=int(os.environ.get("PCH_PORT", "8765")))
+    parser.add_argument(
+        "--data-dir",
+        default=os.environ.get("PCH_DATA_DIR", str(Path.home() / ".pch")),
+    )
+    parser.add_argument("--reload", action=argparse.BooleanOptionalAction, default=True)
+    args = parser.parse_args(argv)
+    os.environ["PCH_DATA_DIR"] = args.data_dir
+    run_server(args.host, args.port, reload=args.reload)
+
+
+if __name__ == "__main__":
+    main()

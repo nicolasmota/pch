@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+dist/
+build/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg
+.coverage
+htmlcov/
+
+# Node / frontend
+node_modules/
+frontend/dist/
+*.tsbuildinfo
+packages/pcl-server/src/pcl_server/static/
+
+# Vault / secrets
+*.db
+*.db-wal
+*.db-shm
+*.pca
+.vault/
+*.key
+.env
+.env.*
+google_oauth.json
+
+# Packaging
+*.spec.bak
+apps/hub-desktop/dist/
+
+# OS / editors
+.DS_Store
+Thumbs.db
+*.tmp
+*.swp
+.idea/
+.vscode/
+.cursor/mcp.json

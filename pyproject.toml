@@ -1,0 +1,80 @@
+[project]
+name = "personal-context-hub"
+version = "0.1.0"
+description = "Personal Context Hub — local-first personal context for any agent"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "pcl-core",
+    "pcl-server",
+    "pca",
+    "pcl-sdk",
+    "hub-desktop",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3",
+    "pytest-asyncio>=0.24",
+    "httpx>=0.28",
+    "schemathesis>=3.39",
+    "playwright>=1.49",
+    "ruff>=0.9",
+    "mypy>=1.14",
+]
+
+[tool.uv.workspace]
+members = [
+    "packages/pcl-core",
+    "packages/pcl-server",
+    "packages/pca",
+    "packages/pcl-sdk",
+    "apps/hub-desktop",
+]
+
+[tool.uv.sources]
+pcl-core = { workspace = true }
+pcl-server = { workspace = true }
+pca = { workspace = true }
+pcl-sdk = { workspace = true }
+hub-desktop = { workspace = true }
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+pythonpath = [
+    "packages/pcl-core/src",
+    "packages/pcl-server/src",
+    "packages/pca/src",
+    "packages/pcl-sdk/src",
+    "apps/hub-desktop/src",
+]
+markers = [
+    "forbidden_context: seeded policy isolation tests (SC-003)",
+    "perf: scale/performance checks (SC-009)",
+    "e2e: Playwright UI journeys",
+    "connectors: Google Calendar/Gmail connector tests (mocked transports)",
+    "plugins: plugin host, kit, and marketplace tests",
+]
+testpaths = [
+    "packages/pcl-core/tests",
+    "packages/pcl-server/tests",
+    "packages/pca/tests",
+    "packages/pcl-sdk/tests",
+    "apps/hub-desktop/tests",
+]
+
+[tool.mypy]
+python_version = "3.14"
+strict = true
+packages = ["pcl_core", "pcl_server", "pca", "pcl_sdk", "hub_desktop"]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "pytest-asyncio>=0.24",
+    "httpx>=0.28",
+    "schemathesis>=3.39",
+    "playwright>=1.49",
+    "ruff>=0.9",
+    "mypy>=1.14",
+]
