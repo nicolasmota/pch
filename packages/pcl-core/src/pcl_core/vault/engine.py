@@ -2,9 +2,11 @@ from __future__ import annotations
 
 import os
 import sqlite3
-from collections.abc import Iterator
+import threading
+from collections.abc import Iterator, Sequence
 from contextlib import contextmanager
 from pathlib import Path
+from typing import Any
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS objects (
@@ -65,7 +67,73 @@ CREATE TABLE IF NOT EXISTS idempotency (
 
 def dict_row(cursor, row):
     """Driver-agnostic mapping; sqlite3.Row cannot wrap a SQLCipher cursor."""
-    return {col[0]: row[idx] for idx, col in enumerate(cursor.description)}
+    if not cursor.description:
+        return {}
+    return {col[0]: value for col, value in zip(cursor.description, row, strict=False)}
+
+
+class _BufferedCursor:
+    def __init__(self, rows: list[Any], lastrowid: int | None) -> None:
+        self._rows = rows
+        self._index = 0
+        self.lastrowid = lastrowid
+
+    def fetchone(self) -> Any:
+        if self._index >= len(self._rows):
+            return None
+        row = self._rows[self._index]
+        self._index += 1
+        return row
+
+    def fetchall(self) -> list[Any]:
+        rest = self._rows[self._index :]
+        self._index = len(self._rows)
+        return rest
+
+    def __iter__(self) -> Iterator[Any]:
+        return iter(self.fetchall())
+
+
+class SerializedConnection:
+    """One sqlite connection is not safe across FastAPI's threadpool without a lock."""
+
+    def __init__(self, conn: sqlite3.Connection, lock: threading.RLock) -> None:
+        self._conn = conn
+        self._lock = lock
+
+    def execute(self, sql: str, parameters: Sequence[Any] = ()) -> _BufferedCursor:
+        with self._lock:
+            cursor = self._conn.execute(sql, parameters)
+            rows = cursor.fetchall()
+            return _BufferedCursor(rows, cursor.lastrowid)
+
+    def executescript(self, sql: str) -> sqlite3.Cursor:
+        with self._lock:
+            return self._conn.executescript(sql)
+
+    def commit(self) -> None:
+        with self._lock:
+            self._conn.commit()
+
+    def rollback(self) -> None:
+        with self._lock:
+            self._conn.rollback()
+
+    def close(self) -> None:
+        with self._lock:
+            self._conn.close()
+
+    @property
+    def in_transaction(self) -> bool:
+        return bool(getattr(self._conn, "in_transaction", False))
+
+    @property
+    def row_factory(self):
+        return self._conn.row_factory
+
+    @row_factory.setter
+    def row_factory(self, value) -> None:
+        self._conn.row_factory = value
 
 
 def _connect_sqlcipher(path: Path, key: bytes):
@@ -90,19 +158,21 @@ class Engine:
     def __init__(self, path: Path, key: bytes, *, plain: bool | None = None) -> None:
         self.path = path
         path.parent.mkdir(parents=True, exist_ok=True)
+        self._lock = threading.RLock()
         use_plain = plain if plain is not None else os.environ.get("PCH_PLAIN_SQLITE") == "1"
         if use_plain:
-            self.conn = _connect_sqlite(path)
+            raw = _connect_sqlite(path)
             self.encrypted = False
         else:
             try:
-                self.conn = _connect_sqlcipher(path, key)
+                raw = _connect_sqlcipher(path, key)
                 self.encrypted = True
-                self.conn.execute("SELECT count(*) FROM sqlite_master").fetchone()
+                raw.execute("SELECT count(*) FROM sqlite_master").fetchone()
             except Exception:
-                self.conn = _connect_sqlite(path)
+                raw = _connect_sqlite(path)
                 self.encrypted = False
-        self.conn.row_factory = dict_row
+        raw.row_factory = dict_row
+        self.conn = SerializedConnection(raw, self._lock)
         self.conn.executescript(SCHEMA)
         self._migrate()
         self.conn.commit()
@@ -118,29 +188,30 @@ class Engine:
         )
 
     @contextmanager
-    def tx(self) -> Iterator[sqlite3.Connection]:
-        nested = self._tx_depth > 0
-        self._tx_depth += 1
-        savepoint = f"pch_{self._tx_depth}"
-        try:
-            if nested:
-                self.conn.execute(f"SAVEPOINT {savepoint}")
-            else:
-                self.conn.execute("BEGIN")
-            yield self.conn
-            if nested:
-                self.conn.execute(f"RELEASE {savepoint}")
-            else:
-                self.conn.commit()
-        except Exception:
-            if nested:
-                self.conn.execute(f"ROLLBACK TO {savepoint}")
-                self.conn.execute(f"RELEASE {savepoint}")
-            else:
-                self.conn.rollback()
-            raise
-        finally:
-            self._tx_depth -= 1
+    def tx(self) -> Iterator[SerializedConnection]:
+        with self._lock:
+            nested = self._tx_depth > 0
+            self._tx_depth += 1
+            savepoint = f"pch_{self._tx_depth}"
+            try:
+                if nested:
+                    self.conn.execute(f"SAVEPOINT {savepoint}")
+                else:
+                    self.conn.execute("BEGIN")
+                yield self.conn
+                if nested:
+                    self.conn.execute(f"RELEASE {savepoint}")
+                else:
+                    self.conn.commit()
+            except Exception:
+                if nested:
+                    self.conn.execute(f"ROLLBACK TO {savepoint}")
+                    self.conn.execute(f"RELEASE {savepoint}")
+                else:
+                    self.conn.rollback()
+                raise
+            finally:
+                self._tx_depth -= 1
 
     def close(self) -> None:
         self.conn.close()
