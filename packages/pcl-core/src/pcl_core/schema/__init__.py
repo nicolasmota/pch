@@ -3,6 +3,13 @@ from pcl_core.schema.approval import Approval, DecisionKind
 from pcl_core.schema.artifact import Artifact, ArtifactKind
 from pcl_core.schema.audit import AuditEvent, EventKind
 from pcl_core.schema.conflict import Conflict, ConflictKind, ConflictStatus
+from pcl_core.schema.connection import AgentConnection, ConnectionStatus
+from pcl_core.schema.connector import (
+    ConnectorAccount,
+    ConnectorKind,
+    ConnectorProvider,
+    ConnectorStatus,
+)
 from pcl_core.schema.contract import (
     Citation,
     ConflictPair,
@@ -12,11 +19,10 @@ from pcl_core.schema.contract import (
     ItemRef,
     OmissionCategory,
     OmissionNote,
+    RelationRef,
     ScopeSummary,
     SituationRef,
 )
-from pcl_core.schema.connection import AgentConnection, ConnectionStatus
-from pcl_core.schema.connector import ConnectorAccount, ConnectorKind, ConnectorProvider, ConnectorStatus
 from pcl_core.schema.event import CalendarEvent, CalendarEventStatus
 from pcl_core.schema.grant import PRESETS, Capability, Grant, GrantStatus
 from pcl_core.schema.manifest import ContextManifest, DisclosedRef, ManifestStatus
@@ -42,8 +48,16 @@ from pcl_core.schema.plugin import (
 from pcl_core.schema.portability import ExportRecord, ImportStaging, ResolutionChoice, StagingStatus
 from pcl_core.schema.preference import Preference
 from pcl_core.schema.profile import Profile
-from pcl_core.schema.project import Commitment, Decision, Goal, Project, ProjectStatus
-from pcl_core.schema.proposal import MemoryProposal, ProposalStatus
+from pcl_core.schema.project import (
+    Commitment,
+    Decision,
+    Goal,
+    OperationalPhase,
+    Project,
+    ProjectStatus,
+)
+from pcl_core.schema.proposal import MemoryProposal, OperationalProposal, ProposalStatus
+from pcl_core.schema.relation import Relation, RelationProposal, RelationType
 from pcl_core.schema.space import ContextSpace
 from pcl_core.schema.state import SharedState, StateVisibility
 
@@ -61,6 +75,7 @@ TYPE_MODELS = {
     EntityType.CONNECTOR_ACCOUNT: ConnectorAccount,
     EntityType.EVENT: CalendarEvent,
     EntityType.PLUGIN: PluginInstallation,
+    EntityType.RELATION: Relation,
 }
 
 __all__ = [
@@ -116,6 +131,8 @@ __all__ = [
     "MemoryProposal",
     "OmissionCategory",
     "OmissionNote",
+    "OperationalPhase",
+    "OperationalProposal",
     "PRESETS",
     "Person",
     "Preference",
@@ -123,6 +140,10 @@ __all__ = [
     "Project",
     "ProjectStatus",
     "ProposalStatus",
+    "Relation",
+    "RelationProposal",
+    "RelationRef",
+    "RelationType",
     "ResolutionChoice",
     "Retention",
     "RetentionMode",

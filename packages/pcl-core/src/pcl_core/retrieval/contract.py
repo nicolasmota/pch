@@ -19,6 +19,7 @@ from pcl_core.schema.contract import (
     ItemRef,
     OmissionCategory,
     OmissionNote,
+    RelationRef,
     ScopeSummary,
     SituationRef,
 )
@@ -28,6 +29,7 @@ from pcl_core.vault.objects import ObjectStore
 
 MEMORY_INLINE_CAP = 10
 CATEGORY_INLINE_CAP = 20
+RELATION_CAP = 20
 
 _OMISSION_LABELS = {
     OmissionCategory.SCOPE_NOT_GRANTED: "out-of-scope context withheld",
@@ -113,6 +115,43 @@ def _cap_default(type_: str) -> str:
     return "project.read"
 
 
+def _blank_to_none(value: Any) -> str | None:
+    if value is None:
+        return None
+    text = str(value).strip()
+    return text or None
+
+
+def _resource_project(obj: dict[str, Any]) -> str | None:
+    if obj.get("type") == "project":
+        return obj["id"]
+    return obj.get("project_id")
+
+
+def _situation_ref(project: dict[str, Any], goal: dict[str, Any] | None = None) -> SituationRef:
+    phase = _blank_to_none(project.get("operational_phase"))
+    step = _blank_to_none(project.get("current_step"))
+    intent = _blank_to_none(project.get("situation_intent"))
+    if goal:
+        goal_phase = _blank_to_none(goal.get("operational_phase"))
+        goal_step = _blank_to_none(goal.get("current_step"))
+        goal_intent = _blank_to_none(goal.get("situation_intent"))
+        if goal_phase:
+            phase = goal_phase
+        if goal_step:
+            step = goal_step
+        if goal_intent:
+            intent = goal_intent
+    return SituationRef(
+        project_id=project["id"],
+        title=project.get("title") or project["id"],
+        status=str(project.get("status") or ""),
+        operational_phase=phase,
+        current_step=step,
+        situation_intent=intent,
+    )
+
+
 def assemble_contract(
     store: ObjectStore,
     query: ContextQuery,
@@ -154,12 +193,14 @@ def assemble_contract(
     projects = store.list("project")
     goals = store.list("goal")
     hinted: dict[str, Any] | None = None
+    goal_overlay: dict[str, Any] | None = None
     if query.subject_ref:
         try:
             hinted = store.get(query.subject_ref)
         except NotFound:
             hinted = None
         if hinted and hinted.get("type") == "goal" and hinted.get("project_id"):
+            goal_overlay = hinted
             try:
                 hinted = store.get(hinted["project_id"])
             except NotFound:
@@ -167,6 +208,7 @@ def assemble_contract(
         if hinted and hinted.get("type") == "project":
             if not allowed(hinted, hinted["id"]):
                 hinted = None
+                goal_overlay = None
 
     scores: dict[str, int] = {}
     for project in projects:
@@ -188,23 +230,11 @@ def assemble_contract(
             selected = in_scope[0]
         elif len(in_scope) > 1:
             candidates = [
-                SituationRef(
-                    project_id=p["id"],
-                    title=p.get("title") or p["id"],
-                    status=str(p.get("status") or ""),
-                )
+                _situation_ref(p)
                 for p in sorted(in_scope, key=lambda row: row["id"])
             ]
 
-    situation = (
-        SituationRef(
-            project_id=selected["id"],
-            title=selected.get("title") or selected["id"],
-            status=str(selected.get("status") or ""),
-        )
-        if selected
-        else None
-    )
+    situation = _situation_ref(selected, goal_overlay) if selected else None
     anchor_id = selected["id"] if selected else None
 
     def to_item(obj: dict[str, Any]) -> ContractItem:
@@ -301,6 +331,51 @@ def assemble_contract(
         state_out, extra = take(state_rows, cat_cap)
         references.extend(extra)
 
+    relation_refs: list[RelationRef] = []
+    if anchor_id:
+        live = [row for row in store.list("relation") if row.get("status") == "live"]
+
+        def incident(row: dict[str, Any], node_id: str) -> bool:
+            return row.get("from_id") == node_id or row.get("to_id") == node_id
+
+        hop0 = [row for row in live if incident(row, anchor_id)]
+        neighbor_ids = {
+            row["to_id"] if row.get("from_id") == anchor_id else row["from_id"] for row in hop0
+        }
+        hop0_ids = {row["id"] for row in hop0}
+        hop1 = [
+            row
+            for row in live
+            if row["id"] not in hop0_ids
+            and (row.get("from_id") in neighbor_ids or row.get("to_id") in neighbor_ids)
+        ]
+        ranked = hop0 + hop1
+        ranked.sort(key=lambda row: (str(row.get("relation_type") or ""), row["id"]))
+        for rel in ranked[:RELATION_CAP]:
+            try:
+                src = store.get(rel["from_id"])
+                dst = store.get(rel["to_id"])
+            except NotFound:
+                continue
+            src_result = decide(src, _resource_project(src))
+            dst_result = decide(dst, _resource_project(dst))
+            if src_result.decision != Decision.ALLOW or dst_result.decision != Decision.ALLOW:
+                denied = src_result if src_result.decision != Decision.ALLOW else dst_result
+                omission_counts[_omission_category(denied)] += 1
+                continue
+            relation_refs.append(
+                RelationRef(
+                    id=rel["id"],
+                    relation_type=str(rel["relation_type"]),
+                    from_=ItemRef(
+                        id=src["id"], type=str(src.get("type") or ""), summary=_summary(src)
+                    ),
+                    to=ItemRef(
+                        id=dst["id"], type=str(dst.get("type") or ""), summary=_summary(dst)
+                    ),
+                )
+            )
+
     conflicts: list[ConflictPair] = []
     by_key: dict[str, list[str]] = defaultdict(list)
     for item in prefs_out:
@@ -360,6 +435,7 @@ def assemble_contract(
         decisions=decs_out,
         constraints=constraints_out,
         state=state_out,
+        relations=relation_refs,
         references=references,
         conflicts=conflicts,
         granted_scope=scope,

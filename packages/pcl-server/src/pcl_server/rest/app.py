@@ -23,10 +23,12 @@ from pcl_server.rest.routers import (
     events,
     marketplace,
     memories,
+    operational,
     plugins,
     portability,
     projects,
     proposals,
+    relations,
     search,
     setup,
     state,
@@ -84,6 +86,8 @@ def create_app(hub: Hub | None = None, data_dir: Path | None = None) -> FastAPI:
         versions.router,
         memories.router,
         projects.router,
+        operational.router,
+        relations.router,
     ):
         app.include_router(router, prefix="/v1")
 

@@ -36,6 +36,69 @@ function asGrantPreset(value: string): GrantPreset {
   }
 }
 
+type RecipeFormat = "cursor-mcp-json" | "hermes-yaml" | "openclaw-json";
+
+function asRecipeFormat(value: string | undefined): RecipeFormat {
+  switch (value) {
+    case "cursor-mcp-json":
+    case "hermes-yaml":
+    case "openclaw-json":
+      return value;
+    default:
+      return "cursor-mcp-json";
+  }
+}
+
+function yamlScalar(value: unknown): string {
+  if (typeof value === "string") {
+    return JSON.stringify(value);
+  }
+  if (typeof value === "boolean" || typeof value === "number") {
+    return String(value);
+  }
+  return JSON.stringify(value);
+}
+
+function toYaml(value: unknown, indent = 0): string {
+  const pad = "  ".repeat(indent);
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => {
+        if (item && typeof item === "object") {
+          return `${pad}-\n${toYaml(item, indent + 1)}`;
+        }
+        return `${pad}- ${yamlScalar(item)}`;
+      })
+      .join("\n");
+  }
+  if (value && typeof value === "object") {
+    return Object.entries(value as Record<string, unknown>)
+      .map(([key, nested]) => {
+        if (nested && typeof nested === "object") {
+          return `${pad}${key}:\n${toYaml(nested, indent + 1)}`;
+        }
+        return `${pad}${key}: ${yamlScalar(nested)}`;
+      })
+      .join("\n");
+  }
+  return `${pad}${yamlScalar(value)}`;
+}
+
+function recipeClipboard(recipe: AssistantRecipe): string {
+  const format = asRecipeFormat(recipe.format);
+  switch (format) {
+    case "hermes-yaml":
+      return toYaml(recipe.snippet);
+    case "openclaw-json":
+    case "cursor-mcp-json":
+      return JSON.stringify(recipe.snippet, null, 2);
+    default: {
+      const _exhaustive: never = format;
+      return _exhaustive;
+    }
+  }
+}
+
 export default function Connections() {
   const [link, setLink] = useState("");
   const [preset, setPreset] = useState<GrantPreset>("read_project");
@@ -119,7 +182,7 @@ export default function Connections() {
 
   async function copyRecipe() {
     if (!recipe) return;
-    await navigator.clipboard.writeText(JSON.stringify(recipe.snippet, null, 2));
+    await navigator.clipboard.writeText(recipeClipboard(recipe));
     setMsg("Copied to clipboard.");
   }
 
@@ -217,7 +280,7 @@ export default function Connections() {
           <div className="space-y-2">
             <p className="text-sm text-muted">{recipe.instructions}</p>
             <pre className="overflow-x-auto rounded bg-canvas p-3 text-xs text-ink">
-              {JSON.stringify(recipe.snippet, null, 2)}
+              {recipeClipboard(recipe)}
             </pre>
           </div>
         ) : null}

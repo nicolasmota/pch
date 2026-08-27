@@ -20,6 +20,18 @@ export type Project = {
   title: string;
   status: string;
   charter: string;
+  operational_phase?: string | null;
+  current_step?: string | null;
+  situation_intent?: string | null;
+};
+
+export type Goal = {
+  id: string;
+  title: string;
+  status: string;
+  operational_phase?: string | null;
+  current_step?: string | null;
+  situation_intent?: string | null;
 };
 
 export type Memory = {
@@ -94,6 +106,33 @@ export type MemoryProposal = {
   statement?: string;
 };
 
+export type OperationalProposal = {
+  id: string;
+  status: string;
+  target_id: string;
+  operational_phase?: string | null;
+  current_step?: string | null;
+  situation_intent?: string | null;
+  submitted_by?: string;
+};
+
+export type Relation = {
+  id: string;
+  from_id: string;
+  to_id: string;
+  relation_type: string;
+  status?: string;
+};
+
+export type RelationProposal = {
+  id: string;
+  status: string;
+  from_id: string;
+  to_id: string;
+  relation_type: string;
+  submitted_by?: string;
+};
+
 export type Conflict = {
   id: string;
   kind: string;
@@ -158,8 +197,9 @@ export type AssistantCatalogEntry = {
 
 export type AssistantRecipe = {
   assistant: string;
+  format?: "cursor-mcp-json" | "hermes-yaml" | "openclaw-json";
   instructions: string;
-  snippet: { mcpServers: Record<string, unknown> };
+  snippet: Record<string, unknown>;
 };
 
 export type ConnectorAccount = {

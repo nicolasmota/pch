@@ -12,6 +12,14 @@ class ProjectStatus(StrEnum):
     ARCHIVED = "archived"
 
 
+class OperationalPhase(StrEnum):
+    PLANNING = "planning"
+    COMPARING_ITINERARIES = "comparing_itineraries"
+    WAITING_FOR_APPROVAL = "waiting_for_approval"
+    CHOOSING_HOTEL = "choosing_hotel"
+    OTHER = "other"
+
+
 class GoalStatus(StrEnum):
     OPEN = "open"
     DONE = "done"
@@ -30,6 +38,9 @@ class Project(UniversalMetadata):
     status: ProjectStatus = ProjectStatus.ACTIVE
     charter: str = ""
     stakeholders: list[str] = Field(default_factory=list)
+    operational_phase: OperationalPhase | None = None
+    current_step: str | None = Field(default=None, max_length=200)
+    situation_intent: str | None = Field(default=None, max_length=200)
 
 
 class Goal(UniversalMetadata):
@@ -39,6 +50,9 @@ class Goal(UniversalMetadata):
     measure: str | None = None
     status: GoalStatus = GoalStatus.OPEN
     project_id: str | None = None
+    operational_phase: OperationalPhase | None = None
+    current_step: str | None = Field(default=None, max_length=200)
+    situation_intent: str | None = Field(default=None, max_length=200)
 
 
 class Commitment(UniversalMetadata):

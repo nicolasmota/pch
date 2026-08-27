@@ -57,6 +57,9 @@ class SituationRef(BaseModel):
     project_id: str
     title: str
     status: str
+    operational_phase: str | None = None
+    current_step: str | None = None
+    situation_intent: str | None = None
 
 
 class ConflictPair(BaseModel):
@@ -94,6 +97,15 @@ class ContractItem(BaseModel):
     untrusted: bool = False
 
 
+class RelationRef(BaseModel):
+    id: str
+    relation_type: str
+    from_: ItemRef = Field(alias="from")
+    to: ItemRef
+
+    model_config = {"populate_by_name": True, "serialize_by_alias": True}
+
+
 class ContextContract(BaseModel):
     contract_id: str
     purpose: str
@@ -105,6 +117,7 @@ class ContextContract(BaseModel):
     decisions: list[ContractItem] = Field(default_factory=list)
     constraints: list[ContractItem] = Field(default_factory=list)
     state: list[ContractItem] = Field(default_factory=list)
+    relations: list[RelationRef] = Field(default_factory=list)
     references: list[ItemRef] = Field(default_factory=list)
     conflicts: list[ConflictPair] = Field(default_factory=list)
     granted_scope: ScopeSummary

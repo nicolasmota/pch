@@ -69,3 +69,20 @@ def attach_tools(mcp, hub: Hub) -> None:
     def check_action_status(intent_id: str) -> dict:
         intent = hub.get(intent_id)
         return {"status": intent.get("status"), "decided_at": intent.get("decided_at")}
+
+    @mcp.tool()
+    def propose_operational_state(
+        target_id: str,
+        operational_phase: str | None = None,
+        current_step: str | None = None,
+        situation_intent: str | None = None,
+    ) -> dict:
+        actor = mcp._current_actor
+        return hub.propose_operational_state(
+            actor, target_id, operational_phase, current_step, situation_intent
+        )
+
+    @mcp.tool()
+    def propose_relation(from_id: str, to_id: str, relation_type: str) -> dict:
+        actor = mcp._current_actor
+        return hub.propose_relation(actor, from_id, to_id, relation_type)

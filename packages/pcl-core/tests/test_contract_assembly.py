@@ -18,6 +18,7 @@ REQUIRED_FIELDS = {
     "decisions",
     "constraints",
     "state",
+    "relations",
     "references",
     "conflicts",
     "granted_scope",

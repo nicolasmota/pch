@@ -29,6 +29,9 @@ class EntityType(StrEnum):
     CONNECTOR_ACCOUNT = "connector_account"
     EVENT = "event"
     PLUGIN = "plugin"
+    OPERATIONAL_PROPOSAL = "operational_proposal"
+    RELATION = "relation"
+    RELATION_PROPOSAL = "relation_proposal"
 
 
 class Classification(StrEnum):

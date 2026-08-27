@@ -25,6 +25,18 @@ ASSISTANTS: list[dict] = [
         "supported": True,
         "notes": "Requires MCP connector availability on the user's plan",
     },
+    {
+        "id": "hermes",
+        "name": "Hermes",
+        "supported": True,
+        "notes": "Paste under mcp_servers in ~/.hermes/config.yaml",
+    },
+    {
+        "id": "openclaw",
+        "name": "OpenClaw",
+        "supported": True,
+        "notes": "Paste under mcp.servers in ~/.openclaw/openclaw.json",
+    },
 ]
 
 
@@ -39,29 +51,47 @@ def get_assistant(assistant_id: str) -> dict | None:
     return None
 
 
+def _bridge(token: str, base_url: str) -> dict:
+    return {
+        "command": "uv",
+        "args": ["run", "pcl-sdk", "mcp-bridge"],
+        "env": {"PCH_TOKEN": token, "PCH_BASE": base_url},
+    }
+
+
 def render_recipe(assistant_id: str, token: str, base_url: str) -> dict:
     entry = get_assistant(assistant_id)
     if not entry:
         return {}
     if not entry["supported"]:
         return {}
-    snippet = {
-        "mcpServers": {
-            "personal-context-hub": {
-                "command": "uv",
-                "args": ["run", "pcl-sdk", "mcp-bridge"],
-                "env": {"PCH_TOKEN": token, "PCH_BASE": base_url},
-            }
-        }
-    }
-    instructions = {
-        "cursor": "Add this to .cursor/mcp.json, then reload MCP servers.",
-        "claude-code": "Add this MCP server in Claude Code settings.",
-        "claude-desktop": "Paste into Claude Desktop mcpServers config.",
-        "chatgpt": "Add as an MCP connector if your plan supports it.",
-    }
+    bridge = _bridge(token, base_url)
+    if assistant_id == "hermes":
+        snippet: dict = {"mcp_servers": {"personal-context-hub": bridge}}
+        fmt = "hermes-yaml"
+        instructions = (
+            "Add this under mcp_servers in ~/.hermes/config.yaml, then reload MCP "
+            "in the session (/reload-mcp)."
+        )
+    elif assistant_id == "openclaw":
+        snippet = {"mcp": {"servers": {"personal-context-hub": bridge}}}
+        fmt = "openclaw-json"
+        instructions = (
+            "Add this under mcp.servers in ~/.openclaw/openclaw.json "
+            "(or Settings → MCP), then reload."
+        )
+    else:
+        snippet = {"mcpServers": {"personal-context-hub": bridge}}
+        fmt = "cursor-mcp-json"
+        instructions = {
+            "cursor": "Add this to .cursor/mcp.json, then reload MCP servers.",
+            "claude-code": "Add this MCP server in Claude Code settings.",
+            "claude-desktop": "Paste into Claude Desktop mcpServers config.",
+            "chatgpt": "Add as an MCP connector if your plan supports it.",
+        }.get(assistant_id, "Paste this MCP config into the assistant.")
     return {
         "assistant": assistant_id,
-        "instructions": instructions.get(assistant_id, "Paste this MCP config into the assistant."),
+        "format": fmt,
+        "instructions": instructions,
         "snippet": snippet,
     }

@@ -7,6 +7,7 @@ import sys
 
 from pcl_sdk.client import Client
 from pcl_sdk.devloop.cli import build_parser, dispatch_loop
+from pcl_sdk.eval.harness import run_eval
 from pcl_sdk.mcp_bridge import main as bridge_main
 from pcl_sdk.plugin_kit import main as plugin_kit_main
 
@@ -40,6 +41,8 @@ def main(argv: list[str] | None = None) -> None:
     bridge_p.add_argument("--base", default=os.environ.get("PCH_BASE", "http://127.0.0.1:8765"))
     plugin_p = sub.add_parser("plugin")
     plugin_p.add_argument("plugin_args", nargs=argparse.REMAINDER)
+    eval_p = sub.add_parser("eval")
+    eval_p.add_argument("eval_cmd", nargs="?", default="run")
     args = parser.parse_args(seq)
     if args.cmd == "demo-agent":
         demo(args.base, args.code, args.token or None)
@@ -50,6 +53,12 @@ def main(argv: list[str] | None = None) -> None:
     if args.cmd == "plugin":
         plugin_kit_main(args.plugin_args)
         return
+    if args.cmd == "eval":
+        if args.eval_cmd != "run":
+            parser.error("usage: pcl-sdk eval run")
+        report = run_eval()
+        sys.stdout.write(json.dumps(report, indent=2) + "\n")
+        raise SystemExit(0 if report["all_pass"] else 1)
     parser.print_help()
     raise SystemExit(1)
 

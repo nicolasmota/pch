@@ -22,24 +22,24 @@ from pcl_core.retrieval.ask import retrieve as retrieve_ask
 from pcl_core.retrieval.briefs import project_brief
 from pcl_core.retrieval.contract import assemble_contract
 from pcl_core.retrieval.manifests import build_manifest
-from pcl_core.retrieval.search import citations_for, search as fts_search
+from pcl_core.retrieval.search import citations_for
+from pcl_core.retrieval.search import search as fts_search
 from pcl_core.schema.action import ActionIntent, IntentStatus
 from pcl_core.schema.approval import Approval, DecisionKind
 from pcl_core.schema.audit import EventKind
 from pcl_core.schema.connection import AgentConnection, ConnectionStatus
 from pcl_core.schema.contract import ContextQuery
 from pcl_core.schema.grant import Grant, GrantStatus
-from pcl_core.schema.manifest import ManifestStatus
 from pcl_core.schema.memory import Memory
-from pcl_core.schema.metadata import Authority, EntityType
-from pcl_core.schema.proposal import ProposalStatus
+from pcl_core.schema.project import OperationalPhase
+from pcl_core.schema.proposal import OperationalProposal, ProposalStatus
+from pcl_core.schema.relation import RelationLinkStatus, RelationProposal, RelationType
 from pcl_core.schema.state import SharedState, StateVisibility
 from pcl_core.timeutil import now_iso, row_is_current, validate_interval
 from pcl_core.vault.blobs import BlobStore
 from pcl_core.vault.engine import Engine
 from pcl_core.vault.keys import load_or_create_key
 from pcl_core.vault.objects import ObjectStore
-
 
 OWNER = "owner"
 
@@ -188,6 +188,21 @@ class Hub:
         except ValueError as exc:
             raise ValidationFailed(str(exc)) from exc
 
+    def _assert_operational(self, payload: dict[str, Any]) -> None:
+        phase = payload.get("operational_phase")
+        if phase is not None:
+            try:
+                OperationalPhase(phase)
+            except ValueError as exc:
+                raise ValidationFailed("unknown operational_phase") from exc
+        for key in ("current_step", "situation_intent"):
+            value = payload.get(key)
+            if value is None:
+                continue
+            text = str(value)
+            if len(text) > 200:
+                raise ValidationFailed(f"{key} exceeds 200 characters")
+
     def _current_preference_for_key(self, key: str, *, exclude_id: str | None = None) -> dict | None:
         at = datetime.now(UTC)
         for row in self.store.list("preference"):
@@ -203,6 +218,8 @@ class Hub:
             payload["authority"] = body.get("authority", "user_confirmed")
             if type_ in ("preference", "memory"):
                 self._assert_interval(payload)
+            if type_ in ("project", "goal"):
+                self._assert_operational(payload)
             if type_ == "preference" and self._current_preference_for_key(
                 payload.get("key") or ""
             ):
@@ -231,6 +248,8 @@ class Hub:
                 merged["authority"] = "user_confirmed"
             if current.get("type") in ("preference", "memory"):
                 self._assert_interval(merged)
+            if current.get("type") in ("project", "goal"):
+                self._assert_operational(merged)
             stored = self.store.put(merged)
             self.ledger.append(EventKind.OBJECT_WRITE, actor, f"Updated {current['type']}", [obj_id])
             return stored
@@ -505,7 +524,7 @@ class Hub:
             [r["id"] for r in item_refs],
             extra=extra,
         )
-        return contract.model_dump(mode="json")
+        return contract.model_dump(mode="json", by_alias=True)
 
     # --- connections / grants ---
 
@@ -830,6 +849,262 @@ class Hub:
             self.store.put(p)
             self.ledger.append(EventKind.MEMORY_REJECTED, OWNER, "proposal rejected", [proposal_id])
             return p
+
+    def propose_operational_state(
+        self,
+        actor: str,
+        target_id: str,
+        operational_phase: str | None = None,
+        current_step: str | None = None,
+        situation_intent: str | None = None,
+    ) -> dict:
+        if actor == OWNER:
+            raise ValidationFailed("owner writes operational state directly")
+        if not target_id or not str(target_id).strip():
+            raise ValidationFailed("target_id is required")
+        target = self.store.get(target_id)
+        if target.get("type") not in ("project", "goal"):
+            raise ValidationFailed("target must be a project or goal")
+        proposed = {
+            "operational_phase": operational_phase,
+            "current_step": current_step,
+            "situation_intent": situation_intent,
+        }
+        self._assert_operational(proposed)
+        created = now_iso()
+        proposal = OperationalProposal(
+            id=new_id("operational_proposal"),
+            target_id=target_id,
+            operational_phase=operational_phase,
+            current_step=current_step,
+            situation_intent=situation_intent,
+            submitted_by=actor,
+            status=ProposalStatus.PENDING,
+            created_at=created,
+        )
+        with self.engine.tx():
+            payload = proposal.model_dump(mode="json")
+            payload.update(
+                {
+                    "type": "operational_proposal",
+                    "owner": self.person_id(),
+                    "labels": [],
+                    "classification": "personal",
+                    "updated_at": created,
+                    "source_refs": [],
+                    "confidence": 1.0,
+                    "authority": "proposed",
+                    "retention": {"mode": "until_revoked"},
+                    "policy_tags": [],
+                    "version": 1,
+                }
+            )
+            stored = self.store.put(payload, new=True)
+            self.ledger.append(
+                EventKind.OBJECT_WRITE,
+                actor,
+                "operational state proposed",
+                [stored["id"], target_id],
+            )
+            return stored
+
+    def list_operational_proposals(self, status: str | None = None) -> list[dict]:
+        rows = self.store.list("operational_proposal")
+        if status:
+            rows = [row for row in rows if row.get("status") == status]
+        return rows
+
+    def decide_operational_proposal(self, proposal_id: str, accept: bool) -> dict:
+        with self.engine.tx():
+            proposal = self.store.get(proposal_id)
+            if proposal.get("type") != "operational_proposal":
+                raise NotFound(proposal_id)
+            if proposal.get("status") != ProposalStatus.PENDING:
+                raise VersionConflict("proposal already resolved")
+            if accept:
+                patch_body = {
+                    key: proposal[key]
+                    for key in ("operational_phase", "current_step", "situation_intent")
+                    if proposal.get(key) is not None
+                }
+                if patch_body:
+                    self.patch(proposal["target_id"], patch_body, None)
+                proposal["status"] = ProposalStatus.ACCEPTED
+                stored = self.store.put(proposal)
+                self.ledger.append(
+                    EventKind.OBJECT_WRITE,
+                    OWNER,
+                    "operational proposal accepted",
+                    [proposal_id, proposal["target_id"]],
+                )
+                return stored
+            proposal["status"] = ProposalStatus.REJECTED
+            stored = self.store.put(proposal)
+            self.ledger.append(
+                EventKind.OBJECT_WRITE,
+                OWNER,
+                "operational proposal rejected",
+                [proposal_id],
+            )
+            return stored
+
+    def _parse_relation_type(self, relation_type: str) -> RelationType:
+        try:
+            return RelationType(relation_type)
+        except ValueError as exc:
+            raise ValidationFailed("unknown relation type") from exc
+
+    def _live_relation_conflict(
+        self, from_id: str, to_id: str, relation_type: str, *, exclude_id: str | None = None
+    ) -> None:
+        for row in self.store.list("relation"):
+            if row["id"] == exclude_id:
+                continue
+            if row.get("status") != RelationLinkStatus.LIVE:
+                continue
+            if (
+                row.get("from_id") == from_id
+                and row.get("to_id") == to_id
+                and row.get("relation_type") == relation_type
+            ):
+                raise VersionConflict("duplicate live relation")
+
+    def create_relation(
+        self, from_id: str, to_id: str, relation_type: str, actor: str = OWNER
+    ) -> dict:
+        if from_id == to_id:
+            raise ValidationFailed("self-link forbidden")
+        parsed = self._parse_relation_type(relation_type)
+        self.store.get(from_id)
+        self.store.get(to_id)
+        self._live_relation_conflict(from_id, to_id, parsed.value)
+        body = {
+            "from_id": from_id,
+            "to_id": to_id,
+            "relation_type": parsed.value,
+            "status": RelationLinkStatus.LIVE,
+        }
+        return self.create("relation", body, actor)
+
+    def list_relations(
+        self, from_id: str | None = None, object_id: str | None = None
+    ) -> list[dict]:
+        rows = [
+            row
+            for row in self.store.list("relation")
+            if row.get("status") == RelationLinkStatus.LIVE
+        ]
+        if from_id:
+            rows = [row for row in rows if row.get("from_id") == from_id]
+        if object_id:
+            rows = [
+                row
+                for row in rows
+                if row.get("from_id") == object_id or row.get("to_id") == object_id
+            ]
+        rows.sort(key=lambda row: (row.get("relation_type") or "", row["id"]))
+        return rows
+
+    def delete_relation(self, relation_id: str, actor: str = OWNER) -> dict:
+        current = self.store.get(relation_id)
+        if current.get("type") != "relation":
+            raise NotFound(relation_id)
+        return self.patch(relation_id, {"status": RelationLinkStatus.REMOVED}, None, actor)
+
+    def patch_relation_type(self, relation_id: str, relation_type: str, actor: str = OWNER) -> dict:
+        current = self.store.get(relation_id)
+        if current.get("type") != "relation":
+            raise NotFound(relation_id)
+        if current.get("status") != RelationLinkStatus.LIVE:
+            raise NotFound(relation_id)
+        parsed = self._parse_relation_type(relation_type)
+        self._live_relation_conflict(
+            current["from_id"], current["to_id"], parsed.value, exclude_id=relation_id
+        )
+        return self.patch(relation_id, {"relation_type": parsed.value}, None, actor)
+
+    def propose_relation(self, actor: str, from_id: str, to_id: str, relation_type: str) -> dict:
+        if actor == OWNER:
+            raise ValidationFailed("owner writes relations directly")
+        if from_id == to_id:
+            raise ValidationFailed("self-link forbidden")
+        parsed = self._parse_relation_type(relation_type)
+        self.store.get(from_id)
+        self.store.get(to_id)
+        created = now_iso()
+        proposal = RelationProposal(
+            id=new_id("relation_proposal"),
+            from_id=from_id,
+            to_id=to_id,
+            relation_type=parsed,
+            submitted_by=actor,
+            status=ProposalStatus.PENDING,
+            created_at=created,
+        )
+        with self.engine.tx():
+            payload = proposal.model_dump(mode="json")
+            payload.update(
+                {
+                    "type": "relation_proposal",
+                    "owner": self.person_id(),
+                    "labels": [],
+                    "classification": "personal",
+                    "updated_at": created,
+                    "source_refs": [],
+                    "confidence": 1.0,
+                    "authority": "proposed",
+                    "retention": {"mode": "until_revoked"},
+                    "policy_tags": [],
+                    "version": 1,
+                }
+            )
+            stored = self.store.put(payload, new=True)
+            self.ledger.append(
+                EventKind.OBJECT_WRITE,
+                actor,
+                "relation proposed",
+                [stored["id"], from_id, to_id],
+            )
+            return stored
+
+    def list_relation_proposals(self, status: str | None = None) -> list[dict]:
+        rows = self.store.list("relation_proposal")
+        if status:
+            rows = [row for row in rows if row.get("status") == status]
+        return rows
+
+    def decide_relation_proposal(self, proposal_id: str, accept: bool) -> dict:
+        with self.engine.tx():
+            proposal = self.store.get(proposal_id)
+            if proposal.get("type") != "relation_proposal":
+                raise NotFound(proposal_id)
+            if proposal.get("status") != ProposalStatus.PENDING:
+                raise VersionConflict("proposal already resolved")
+            if accept:
+                created = self.create_relation(
+                    proposal["from_id"],
+                    proposal["to_id"],
+                    proposal["relation_type"],
+                )
+                proposal["status"] = ProposalStatus.ACCEPTED
+                proposal["relation_id"] = created["id"]
+                stored = self.store.put(proposal)
+                self.ledger.append(
+                    EventKind.OBJECT_WRITE,
+                    OWNER,
+                    "relation proposal accepted",
+                    [proposal_id, created["id"]],
+                )
+                return stored
+            proposal["status"] = ProposalStatus.REJECTED
+            stored = self.store.put(proposal)
+            self.ledger.append(
+                EventKind.OBJECT_WRITE,
+                OWNER,
+                "relation proposal rejected",
+                [proposal_id],
+            )
+            return stored
 
     def resolve_conflict(self, conflict_id: str, status: str) -> dict:
         with self.engine.tx():

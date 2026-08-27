@@ -24,6 +24,9 @@ PREFIXES = {
     "import_staging": "imp",
     "connector_account": "cxa",
     "event": "evt",
+    "operational_proposal": "oprop",
+    "relation": "rel",
+    "relation_proposal": "rprop",
 }
 
 

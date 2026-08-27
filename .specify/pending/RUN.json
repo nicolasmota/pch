@@ -1,0 +1,103 @@
+{
+  "schema_version": 1,
+  "feature_dir": ".specify/pending",
+  "mode": "full",
+  "source": "roadmap",
+  "source_value": "E6",
+  "current_stage": "specify",
+  "status": "stopped",
+  "stop_reason": "person_stop",
+  "refuse_reason": null,
+  "bar_path": null,
+  "bar_sha256": null,
+  "gauntlet_round": 0,
+  "test_repair_round": 0,
+  "stages": {
+    "specify": {
+      "id": "specify",
+      "outcome": null,
+      "started_at": null,
+      "ended_at": null,
+      "evidence": null
+    },
+    "clarify": {
+      "id": "clarify",
+      "outcome": null,
+      "started_at": null,
+      "ended_at": null,
+      "evidence": null
+    },
+    "freeze_bar": {
+      "id": "freeze_bar",
+      "outcome": null,
+      "started_at": null,
+      "ended_at": null,
+      "evidence": null
+    },
+    "plan": {
+      "id": "plan",
+      "outcome": null,
+      "started_at": null,
+      "ended_at": null,
+      "evidence": null
+    },
+    "gauntlet": {
+      "id": "gauntlet",
+      "outcome": null,
+      "started_at": null,
+      "ended_at": null,
+      "evidence": null
+    },
+    "tasks": {
+      "id": "tasks",
+      "outcome": null,
+      "started_at": null,
+      "ended_at": null,
+      "evidence": null
+    },
+    "analyze": {
+      "id": "analyze",
+      "outcome": null,
+      "started_at": null,
+      "ended_at": null,
+      "evidence": null
+    },
+    "implement": {
+      "id": "implement",
+      "outcome": null,
+      "started_at": null,
+      "ended_at": null,
+      "evidence": null
+    },
+    "test": {
+      "id": "test",
+      "outcome": null,
+      "started_at": null,
+      "ended_at": null,
+      "evidence": null
+    },
+    "delivery": {
+      "id": "delivery",
+      "outcome": null,
+      "started_at": null,
+      "ended_at": null,
+      "evidence": null
+    },
+    "converge": {
+      "id": "converge",
+      "outcome": null,
+      "started_at": null,
+      "ended_at": null,
+      "evidence": null
+    },
+    "complete": {
+      "id": "complete",
+      "outcome": null,
+      "started_at": null,
+      "ended_at": null,
+      "evidence": null
+    }
+  },
+  "unmet_items": [],
+  "updated_at": "2026-08-27T00:37:16Z"
+}

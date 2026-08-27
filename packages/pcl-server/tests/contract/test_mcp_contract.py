@@ -9,6 +9,7 @@ REQUIRED = {
     "decisions",
     "constraints",
     "state",
+    "relations",
     "references",
     "conflicts",
     "granted_scope",

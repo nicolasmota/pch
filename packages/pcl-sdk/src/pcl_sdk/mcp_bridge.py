@@ -17,6 +17,8 @@ TOOL_NAMES = [
     "propose_action",
     "check_action_status",
     "get_context_contract",
+    "propose_operational_state",
+    "propose_relation",
 ]
 
 TOOL_SCHEMAS: dict[str, dict[str, Any]] = {
@@ -114,6 +116,43 @@ TOOL_SCHEMAS: dict[str, dict[str, Any]] = {
             },
         },
         "required": ["purpose"],
+    },
+    "propose_operational_state": {
+        "type": "object",
+        "additionalProperties": False,
+        "required": ["target_id"],
+        "properties": {
+            "target_id": {
+                "type": "string",
+                "description": "Project or Goal id to patch on accept.",
+            },
+            "operational_phase": {
+                "type": ["string", "null"],
+                "enum": [
+                    "planning",
+                    "comparing_itineraries",
+                    "waiting_for_approval",
+                    "choosing_hotel",
+                    "other",
+                    None,
+                ],
+            },
+            "current_step": {"type": ["string", "null"], "maxLength": 200},
+            "situation_intent": {"type": ["string", "null"], "maxLength": 200},
+        },
+    },
+    "propose_relation": {
+        "type": "object",
+        "additionalProperties": False,
+        "required": ["from_id", "to_id", "relation_type"],
+        "properties": {
+            "from_id": {"type": "string"},
+            "to_id": {"type": "string"},
+            "relation_type": {
+                "type": "string",
+                "enum": ["owned_by", "depends_on", "blocked_by", "related_to"],
+            },
+        },
     },
 }
 

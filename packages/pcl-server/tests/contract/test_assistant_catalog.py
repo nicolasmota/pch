@@ -19,3 +19,43 @@ def test_catalog_and_recipe(client):
         json={"assistant": "not-a-real-agent"},
     )
     assert bad.status_code == 422
+
+
+def test_catalog_lists_hermes_and_openclaw(client):
+    listed = client.get("/v1/catalog/assistants")
+    assert listed.status_code == 200
+    by_id = {row["id"]: row for row in listed.json()}
+    assert by_id["cursor"]["supported"] is True
+    assert by_id["hermes"]["supported"] is True
+    assert by_id["openclaw"]["supported"] is True
+    assert "demo-agent" not in by_id
+
+
+def test_hermes_and_openclaw_recipes(client):
+    link = client.post("/v1/connections/links", json={"name": "runtime"}).json()
+    conn = link["connection_id"]
+    hermes = client.post(f"/v1/connections/{conn}/recipe", json={"assistant": "hermes"})
+    assert hermes.status_code == 200
+    h = hermes.json()
+    assert h["format"] == "hermes-yaml"
+    env = h["snippet"]["mcp_servers"]["personal-context-hub"]["env"]
+    assert env["PCH_TOKEN"]
+    assert env["PCH_BASE"] == "http://127.0.0.1:8765"
+    assert "pcl-sdk" in str(h["snippet"])
+    assert "mcp_servers" in h["instructions"] or "hermes" in h["instructions"].lower()
+    claw = client.post(f"/v1/connections/{conn}/recipe", json={"assistant": "openclaw"})
+    assert claw.status_code == 200
+    c = claw.json()
+    assert c["format"] == "openclaw-json"
+    claw_env = c["snippet"]["mcp"]["servers"]["personal-context-hub"]["env"]
+    assert claw_env["PCH_BASE"] == "http://127.0.0.1:8765"
+    assert "127.0.0.1" in claw_env["PCH_BASE"]
+
+
+def test_unknown_assistant_recipe_rejected(client):
+    link = client.post("/v1/connections/links", json={"name": "runtime"}).json()
+    bad = client.post(
+        f"/v1/connections/{link['connection_id']}/recipe",
+        json={"assistant": "not-a-real-agent"},
+    )
+    assert bad.status_code == 422

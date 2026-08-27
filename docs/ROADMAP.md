@@ -161,7 +161,7 @@ Fila ordenada. Um epic por vez vira spec. Cada spec filha deve ser testável soz
 
 ### E4 — Grafo Leve
 
-**Spec:** —
+**Spec:** `specs/008-light-graph/`
 
 **Problema.** Relacionamentos hoje são principalmente FKs. Não há relações tipadas (`owned_by`, `depends_on`, `blocked_by`, `related_to`).
 
@@ -175,7 +175,7 @@ Fila ordenada. Um epic por vez vira spec. Cada spec filha deve ser testável soz
 
 ### E5 — Adapters de Runtime
 
-**Spec:** —
+**Spec:** `specs/009-runtime-adapters/`
 
 **Problema.** A tese é portabilidade. Hoje o cliente real é Cursor, com demo-agent e um segundo runtime de teste.
 
@@ -189,7 +189,7 @@ Fila ordenada. Um epic por vez vira spec. Cada spec filha deve ser testável soz
 
 ### E6 — Avaliação de Qualidade de Contexto
 
-**Spec:** —
+**Spec:** `specs/010-context-eval/`
 
 **Problema.** Ainda não medimos se o recorte está correto, fresco, preciso ou barato.
 
@@ -254,6 +254,9 @@ A origem da tese é o rascunho `personal-context-layer-spec.md`. O Hub (specs 00
 
 ## Changelog
 
+- **2026-08-26** — E6 spawned as `specs/010-context-eval/` via speckit-loop `--roadmap` after E5 delivery.
+- **2026-08-26** — E5 spawned as `specs/009-runtime-adapters/` via speckit-loop `--roadmap` after E4 delivery.
+- **2026-08-26** — E4 spawned as `specs/008-light-graph/` via speckit-loop `--roadmap` after E3 delivery.
 - **2026-08-26** — E3 spawned as `specs/007-situation-state-intent/` via speckit-loop `--roadmap` after 006 sequencer shipped.
 - **2026-08-26** — Gauntlet round 2 — VISION.md é só a espinha compartilhavel; este arquivo guarda operação.
 - **2026-08-26** — Gauntlet round 1 — shareable spine; architecture after the fold.
