@@ -10,6 +10,7 @@ from pcl_sdk.devloop.cli import build_parser, dispatch_loop
 from pcl_sdk.eval.harness import run_eval
 from pcl_sdk.mcp_bridge import main as bridge_main
 from pcl_sdk.plugin_kit import main as plugin_kit_main
+from pcl_sdk.sim.cli import dispatch_sim
 
 
 def demo(base: str, code: str | None, token: str | None) -> None:
@@ -30,6 +31,8 @@ def main(argv: list[str] | None = None) -> None:
         parser = build_parser()
         args = parser.parse_args(seq)
         raise SystemExit(dispatch_loop(args))
+    if seq[:1] == ["sim"]:
+        raise SystemExit(dispatch_sim(seq[1:]))
     parser = argparse.ArgumentParser(prog="pcl-sdk")
     sub = parser.add_subparsers(dest="cmd")
     demo_p = sub.add_parser("demo-agent")

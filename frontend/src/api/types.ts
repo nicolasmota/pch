@@ -219,3 +219,29 @@ export type ConnectorAccount = {
     error?: string;
   } | null;
 };
+
+export type SimTickSummary = {
+  seq: number;
+  simulated_at?: string;
+  role: string;
+  action: string;
+  via?: string;
+  status: string;
+  ok?: boolean;
+  error?: string | null;
+};
+
+export type SimRun = {
+  id: string;
+  status: string;
+  current_seq: number;
+  object_count?: number;
+  query_count?: number;
+  paired_assistant?: boolean;
+  ticks?: SimTickSummary[];
+};
+
+export type SimTick = SimTickSummary & {
+  input: Record<string, unknown>;
+  result: Record<string, unknown> | null;
+};

@@ -21,6 +21,7 @@ import Projects from "./pages/Projects";
 import ReviewQueue from "./pages/ReviewQueue";
 import Search from "./pages/Search";
 import Setup from "./pages/Setup";
+import Sim from "./pages/Sim";
 
 type BootStatus = "loading" | "ready" | "error";
 
@@ -108,6 +109,7 @@ export default function App() {
             <Route path="/projects" element={<Projects />} />
             <Route path="/memories" element={<Memories />} />
             <Route path="/search" element={<Search />} />
+            <Route path="/sim" element={<Sim />} />
             <Route path="/connections" element={<Connections />} />
             <Route path="/connectors" element={<Connectors />} />
             <Route path="/plugins" element={<Plugins />} />

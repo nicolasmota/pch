@@ -1165,6 +1165,7 @@ source = { editable = "packages/pcl-sdk" }
 dependencies = [
     { name = "httpx" },
     { name = "mcp" },
+    { name = "pcl-core" },
     { name = "pydantic" },
 ]
 
@@ -1172,6 +1173,7 @@ dependencies = [
 requires-dist = [
     { name = "httpx", specifier = ">=0.28" },
     { name = "mcp", specifier = ">=1.9" },
+    { name = "pcl-core", editable = "packages/pcl-core" },
     { name = "pydantic", specifier = ">=2.10" },
 ]
 
@@ -1187,6 +1189,7 @@ dependencies = [
     { name = "mcp" },
     { name = "pca" },
     { name = "pcl-core" },
+    { name = "pcl-sdk" },
     { name = "python-multipart" },
     { name = "uvicorn" },
     { name = "watchfiles" },
@@ -1201,6 +1204,7 @@ requires-dist = [
     { name = "mcp", specifier = ">=1.9" },
     { name = "pca", editable = "packages/pca" },
     { name = "pcl-core", editable = "packages/pcl-core" },
+    { name = "pcl-sdk", editable = "packages/pcl-sdk" },
     { name = "python-multipart", specifier = ">=0.0.18" },
     { name = "uvicorn", specifier = ">=0.34" },
     { name = "watchfiles", specifier = ">=1.0" },

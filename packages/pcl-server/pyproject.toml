@@ -4,8 +4,9 @@ version = "0.1.0"
 description = "Local PCL service: FastAPI control plane and MCP server"
 requires-python = ">=3.14"
 dependencies = [
-    "pcl-core",
-    "pca",
+        "pcl-core",
+        "pca",
+        "pcl-sdk",
     "fastapi>=0.115",
     "uvicorn>=0.34",
     "watchfiles>=1.0",
@@ -29,3 +30,4 @@ packages = ["src/pcl_server"]
 [tool.uv.sources]
 pcl-core = { workspace = true }
 pca = { workspace = true }
+pcl-sdk = { workspace = true }

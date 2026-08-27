@@ -5,7 +5,7 @@ type NavItem = { to: string; label: string; end?: boolean };
 type NavGroup = { heading: string; items: NavItem[] };
 
 const GROUPS: NavGroup[] = [
-        { heading: "Start", items: [{ to: "/", label: "Home", end: true }] },
+        { heading: "Start", items: [{ to: "/", label: "Home", end: true }, { to: "/sim", label: "Simulator" }] },
   {
     heading: "Content",
     items: [

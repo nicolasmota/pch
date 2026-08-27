@@ -31,6 +31,7 @@ from pcl_server.rest.routers import (
     relations,
     search,
     setup,
+    sim,
     state,
     versions,
 )
@@ -45,6 +46,9 @@ async def lifespan(app: FastAPI):
     try:
         yield
     finally:
+        session = getattr(app.state, "sim_session", None)
+        if session is not None:
+            session.stop()
         stop.set()
         task.cancel()
         try:
@@ -53,14 +57,24 @@ async def lifespan(app: FastAPI):
             pass
 
 
-def create_app(hub: Hub | None = None, data_dir: Path | None = None) -> FastAPI:
+def create_app(
+    hub: Hub | None = None,
+    data_dir: Path | None = None,
+    sim_hub: Hub | None = None,
+    sim_dir: Path | None = None,
+) -> FastAPI:
     hub = hub or Hub(data_dir or Path.home() / ".pch", plain=True)
+    if sim_hub is None:
+        directory = sim_dir or Path(os.environ.get("PCH_SIM_DIR") or (hub.data_dir / "_sim"))
+        sim_hub = Hub(directory, plain=True)
     try:
         migrate_connectors(hub)
     except Exception:
         pass
     app = FastAPI(title="Personal Context Layer", version="0.1.0", lifespan=lifespan)
     app.state.hub = hub
+    app.state.sim_hub = sim_hub
+    app.state.sim_session = None
     app.state.mcp = ToolHub(hub)
     app.add_exception_handler(PclError, pcl_error_handler)
     app.add_middleware(IdempotencyMiddleware)
@@ -88,6 +102,7 @@ def create_app(hub: Hub | None = None, data_dir: Path | None = None) -> FastAPI:
         projects.router,
         operational.router,
         relations.router,
+        sim.router,
     ):
         app.include_router(router, prefix="/v1")
 
@@ -122,5 +137,6 @@ def create_app(hub: Hub | None = None, data_dir: Path | None = None) -> FastAPI:
 
 def dev_app() -> FastAPI:
     data_dir = Path(os.environ.get("PCH_DATA_DIR") or (Path.home() / ".pch"))
+    sim_dir = Path(os.environ.get("PCH_SIM_DIR") or (Path.home() / ".pch-sim"))
     plain = os.environ.get("PCH_PLAIN_SQLITE") == "1"
-    return create_app(Hub(data_dir, plain=plain))
+    return create_app(Hub(data_dir, plain=plain), sim_dir=sim_dir)
