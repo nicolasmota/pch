@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pcl_sdk.capture_guidance import RUNTIME_RULE
+
 ASSISTANTS: list[dict] = [
     {
         "id": "cursor",
@@ -71,27 +73,48 @@ def render_recipe(assistant_id: str, token: str, base_url: str) -> dict:
         fmt = "hermes-yaml"
         instructions = (
             "Add this under mcp_servers in ~/.hermes/config.yaml, then reload MCP "
-            "in the session (/reload-mcp)."
+            "in the session (/reload-mcp). Paste the runtime_rule into that assistant's "
+            "personal guidance."
         )
     elif assistant_id == "openclaw":
         snippet = {"mcp": {"servers": {"personal-context-hub": bridge}}}
         fmt = "openclaw-json"
         instructions = (
             "Add this under mcp.servers in ~/.openclaw/openclaw.json "
-            "(or Settings → MCP), then reload."
+            "(or Settings → MCP), then reload. Paste the runtime_rule into that "
+            "assistant's personal guidance."
         )
     else:
         snippet = {"mcpServers": {"personal-context-hub": bridge}}
         fmt = "cursor-mcp-json"
         instructions = {
-            "cursor": "Add this to .cursor/mcp.json, then reload MCP servers.",
-            "claude-code": "Add this MCP server in Claude Code settings.",
-            "claude-desktop": "Paste into Claude Desktop mcpServers config.",
-            "chatgpt": "Add as an MCP connector if your plan supports it.",
-        }.get(assistant_id, "Paste this MCP config into the assistant.")
+            "cursor": (
+                "Add this MCP server in Cursor Settings → MCP (user / this machine) "
+                "so every window of Cursor can reach the Hub, then reload MCP servers. "
+                "Pasting into a single project's .cursor/mcp.json is optional, not the "
+                "only path."
+            ),
+            "claude-code": (
+                "Add this MCP server in Claude Code user settings so every window can "
+                "reach the Hub. Paste the runtime_rule into personal guidance."
+            ),
+            "claude-desktop": (
+                "Paste into Claude Desktop user mcpServers config so every window can "
+                "reach the Hub. Paste the runtime_rule into personal guidance."
+            ),
+            "chatgpt": (
+                "Add as an MCP connector in ChatGPT settings (user/runtime), not a "
+                "single project folder. Paste the runtime_rule into personal guidance."
+            ),
+        }.get(
+            assistant_id,
+            "Paste this MCP config into the assistant's user/runtime settings "
+            "so every window can use it.",
+        )
     return {
         "assistant": assistant_id,
         "format": fmt,
         "instructions": instructions,
         "snippet": snippet,
+        "runtime_rule": RUNTIME_RULE,
     }

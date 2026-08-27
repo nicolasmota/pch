@@ -59,3 +59,36 @@ def test_unknown_assistant_recipe_rejected(client):
         json={"assistant": "not-a-real-agent"},
     )
     assert bad.status_code == 422
+
+
+def _recipe(client, assistant: str) -> dict:
+    link = client.post("/v1/connections/links", json={"name": assistant}).json()
+    response = client.post(
+        f"/v1/connections/{link['connection_id']}/recipe",
+        json={"assistant": assistant},
+    )
+    assert response.status_code == 200
+    return response.json()
+
+
+def test_cursor_recipe_is_person_level_not_project_only(client):
+    body = _recipe(client, "cursor")
+    instructions = body["instructions"].lower()
+    assert "every window" in instructions or (
+        "settings" in instructions and "mcp" in instructions
+    )
+    assert body["instructions"] != "Add this to .cursor/mcp.json, then reload MCP servers."
+    assert "only supported" not in instructions
+    assert "user" in instructions or "settings" in instructions
+
+
+def test_recipes_include_copyable_runtime_rule(client):
+    for assistant in ("cursor", "hermes", "openclaw"):
+        body = _recipe(client, assistant)
+        rule = (body.get("runtime_rule") or "").lower()
+        assert rule
+        assert "task start" in rule or "situation" in rule
+        assert "propose" in rule
+        assert "invent" in rule
+        assert "canonical" in rule or "live truth" in rule or "not live" in rule
+

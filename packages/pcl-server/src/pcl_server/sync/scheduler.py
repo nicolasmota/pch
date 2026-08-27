@@ -134,7 +134,7 @@ async def scheduler_loop(hub: Hub, stop: asyncio.Event) -> None:
                     continue
                 if _due(connector):
                     try:
-                        run_connector_sync(hub, connector["id"])
+                        await asyncio.to_thread(run_connector_sync, hub, connector["id"])
                     except Exception:
                         log.exception("scheduled sync failed for %s", connector.get("id"))
             for plugin in hub.list_plugins():
@@ -144,14 +144,16 @@ async def scheduler_loop(hub: Hub, stop: asyncio.Event) -> None:
                     try:
                         from pcl_server.plugins.host import run_plugin_sync
 
-                        run_plugin_sync(hub, plugin["id"], reason="scheduled")
+                        await asyncio.to_thread(
+                            run_plugin_sync, hub, plugin["id"], reason="scheduled"
+                        )
                     except Exception:
                         log.exception("scheduled plugin sync failed for %s", plugin.get("id"))
             if _catalog_due(hub):
                 try:
                     from pcl_server.marketplace.catalog import refresh_catalog
 
-                    refresh_catalog(hub)
+                    await asyncio.to_thread(refresh_catalog, hub)
                 except Exception:
                     log.exception("catalog refresh failed")
         except Exception:

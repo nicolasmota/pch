@@ -7,6 +7,12 @@ from typing import Any
 
 import httpx
 
+from pcl_sdk.capture_guidance import (
+    MEMORY_PROPOSE_DESCRIPTION,
+    NON_CAPTURE_DESCRIPTION,
+    SITUATION_READ_DESCRIPTION,
+)
+
 TOOL_NAMES = [
     "search_personal_context",
     "get_context_manifest",
@@ -193,11 +199,19 @@ def map_tool_result(status: int, body: Any) -> dict[str, Any]:
     return {"isError": False, "content": [{"type": "text", "text": json.dumps(body)}]}
 
 
+def _tool_description(name: str) -> str:
+    if name == "get_context_contract":
+        return SITUATION_READ_DESCRIPTION
+    if name == "propose_memory":
+        return MEMORY_PROPOSE_DESCRIPTION
+    return f"{name.replace('_', ' ')}. {NON_CAPTURE_DESCRIPTION}"
+
+
 def _mcp_tools() -> list[dict[str, Any]]:
     return [
         {
             "name": name,
-            "description": name.replace("_", " "),
+            "description": _tool_description(name),
             "inputSchema": TOOL_SCHEMAS[name],
         }
         for name in TOOL_NAMES

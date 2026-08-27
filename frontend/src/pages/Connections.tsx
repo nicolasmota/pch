@@ -1,6 +1,12 @@
 import { FormEvent, useEffect, useState } from "react";
 import { api, errorMessage } from "../api/client";
-import type { AssistantCatalogEntry, AssistantRecipe, GrantPreset, PairingLink } from "../api/types";
+import type {
+  AgentConnection,
+  AssistantCatalogEntry,
+  AssistantRecipe,
+  GrantPreset,
+  PairingLink,
+} from "../api/types";
 import Alert from "../components/Alert";
 import Button from "../components/Button";
 import Card from "../components/Card";
@@ -84,7 +90,7 @@ function toYaml(value: unknown, indent = 0): string {
   return `${pad}${yamlScalar(value)}`;
 }
 
-function recipeClipboard(recipe: AssistantRecipe): string {
+function snippetClipboard(recipe: AssistantRecipe): string {
   const format = asRecipeFormat(recipe.format);
   switch (format) {
     case "hermes-yaml":
@@ -99,6 +105,15 @@ function recipeClipboard(recipe: AssistantRecipe): string {
   }
 }
 
+function recipeClipboard(recipe: AssistantRecipe): string {
+  const parts = [recipe.instructions];
+  if (recipe.runtime_rule) {
+    parts.push(recipe.runtime_rule.trim());
+  }
+  parts.push(snippetClipboard(recipe));
+  return parts.join("\n\n");
+}
+
 export default function Connections() {
   const [link, setLink] = useState("");
   const [preset, setPreset] = useState<GrantPreset>("read_project");
@@ -111,11 +126,23 @@ export default function Connections() {
   const [assistants, setAssistants] = useState<AssistantCatalogEntry[]>([]);
   const [assistant, setAssistant] = useState("cursor");
   const [recipe, setRecipe] = useState<AssistantRecipe | null>(null);
+  const [knownConnections, setKnownConnections] = useState<AgentConnection[]>([]);
 
   useEffect(() => {
     api<AssistantCatalogEntry[]>("/v1/catalog/assistants")
       .then(setAssistants)
       .catch(() => setAssistants([]));
+    api<AgentConnection[]>("/v1/connections")
+      .then((rows) => {
+        const usable = rows.filter((item) => item.status !== "revoked");
+        setKnownConnections(usable);
+        setConn((current) => {
+          if (current) return current;
+          const preferred = usable.find((item) => item.status === "active") ?? usable[0];
+          return preferred?.id ?? "";
+        });
+      })
+      .catch(() => setKnownConnections([]));
   }, []);
 
   async function mint() {
@@ -129,6 +156,10 @@ export default function Connections() {
       });
       setLink(data.code);
       setConn(data.connection_id);
+      setKnownConnections((rows) => [
+        { id: data.connection_id, name: "agent", status: "pending" },
+        ...rows.filter((item) => item.id !== data.connection_id),
+      ]);
       setMsg("Pairing link created.");
     } catch (err) {
       setError(errorMessage(err));
@@ -160,14 +191,24 @@ export default function Connections() {
   }
 
   async function loadRecipe() {
-    if (!conn) {
-      setError("Create a pairing link first.");
-      return;
-    }
     setBusy(true);
     setError(null);
     try {
-      const data = await api<AssistantRecipe>(`/v1/connections/${conn}/recipe`, {
+      let connectionId = conn.trim();
+      if (!connectionId) {
+        const minted = await api<PairingLink>("/v1/connections/links", {
+          method: "POST",
+          body: JSON.stringify({ name: assistant }),
+        });
+        setLink(minted.code);
+        setConn(minted.connection_id);
+        setKnownConnections((rows) => [
+          { id: minted.connection_id, name: assistant, status: "pending" },
+          ...rows.filter((item) => item.id !== minted.connection_id),
+        ]);
+        connectionId = minted.connection_id;
+      }
+      const data = await api<AssistantRecipe>(`/v1/connections/${connectionId}/recipe`, {
         method: "POST",
         body: JSON.stringify({ assistant }),
       });
@@ -219,6 +260,24 @@ export default function Connections() {
           </p>
         ) : null}
         <form className="space-y-4" onSubmit={grant}>
+          {knownConnections.length ? (
+            <Field
+              id="conn-pick"
+              label="Existing connection"
+              hint="Recipes use this connection. Generate will mint one if the list is empty."
+            >
+              <Select id="conn-pick" value={conn} onChange={(e) => setConn(e.target.value)}>
+                {conn && !knownConnections.some((item) => item.id === conn) ? (
+                  <option value={conn}>{conn}</option>
+                ) : null}
+                {knownConnections.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.name} ({item.status}) — {item.id}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+          ) : null}
           <Field id="conn-id" label="Connection id">
             <Input id="conn-id" value={conn} onChange={(e) => setConn(e.target.value)} required />
           </Field>
@@ -269,18 +328,28 @@ export default function Connections() {
           </Select>
         </Field>
         <div className="flex flex-wrap gap-2">
-          <Button onClick={loadRecipe} disabled={busy || !conn}>
+          <Button onClick={loadRecipe} disabled={busy}>
             Generate recipe
           </Button>
           <Button variant="secondary" onClick={copyRecipe} disabled={!recipe}>
             Copy config
           </Button>
         </div>
+        <p className="text-xs text-muted">
+          {conn
+            ? "Uses the connection selected above."
+            : "No connection yet — Generate will create a pairing link, then the recipe."}
+        </p>
         {recipe ? (
           <div className="space-y-2">
             <p className="text-sm text-muted">{recipe.instructions}</p>
+            {recipe.runtime_rule ? (
+              <pre className="overflow-x-auto whitespace-pre-wrap rounded bg-canvas p-3 text-xs text-ink">
+                {recipe.runtime_rule}
+              </pre>
+            ) : null}
             <pre className="overflow-x-auto rounded bg-canvas p-3 text-xs text-ink">
-              {recipeClipboard(recipe)}
+              {snippetClipboard(recipe)}
             </pre>
           </div>
         ) : null}

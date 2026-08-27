@@ -1,5 +1,6 @@
 import json
 
+from pcl_sdk.capture_guidance import DURABLE_TRIGGERS, TASK_START_TRIGGERS
 from pcl_sdk.mcp_bridge import TOOL_NAMES, handle_message, map_tool_result
 
 
@@ -43,3 +44,16 @@ def test_search_round_trip(monkeypatch):
     )
     payload = json.loads(reply["result"]["content"][0]["text"])
     assert payload["results"][0]["statement"].startswith("Atlas")
+
+
+def test_situation_and_propose_descriptions_include_when_to_use():
+    reply = handle_message({"jsonrpc": "2.0", "id": 1, "method": "tools/list"}, "http://x", "tok")
+    tools = {t["name"]: t["description"].lower() for t in reply["result"]["tools"]}
+    sit = tools["get_context_contract"]
+    prop = tools["propose_memory"]
+    assert sit != "get context contract"
+    assert prop != "propose memory"
+    assert any(token in sit for token in TASK_START_TRIGGERS)
+    assert any(token in prop for token in DURABLE_TRIGGERS)
+    assert "invent" in sit
+    assert "proposal" in prop or "propose" in prop

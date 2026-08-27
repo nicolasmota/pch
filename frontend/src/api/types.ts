@@ -87,6 +87,12 @@ export type PairingLink = {
   connection_id: string;
 };
 
+export type AgentConnection = {
+  id: string;
+  name: string;
+  status: string;
+};
+
 export type GrantPreset = "read_active_projects" | "read_project" | "always_ask_before_sending";
 
 export type Grant = {
@@ -200,6 +206,7 @@ export type AssistantRecipe = {
   format?: "cursor-mcp-json" | "hermes-yaml" | "openclaw-json";
   instructions: string;
   snippet: Record<string, unknown>;
+  runtime_rule?: string;
 };
 
 export type ConnectorAccount = {
