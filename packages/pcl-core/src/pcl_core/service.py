@@ -38,7 +38,7 @@ from pcl_core.schema.state import SharedState, StateVisibility
 from pcl_core.timeutil import now_iso, row_is_current, validate_interval
 from pcl_core.vault.blobs import BlobStore
 from pcl_core.vault.engine import Engine
-from pcl_core.vault.keys import load_or_create_key
+from pcl_core.vault.keys import key_storage, load_or_create_key
 from pcl_core.vault.objects import ObjectStore
 
 OWNER = "owner"
@@ -82,6 +82,8 @@ class Hub:
             "initialized": bool(self._kv_get("setup_complete")),
             "in_progress": bool(self._kv_get("setup_started")) and not self._kv_get("setup_complete"),
             "name": name,
+            "encrypted": self.engine.encrypted,
+            "key_storage": key_storage(self.data_dir),
         }
 
     def setup(self, name: str = "Me", restart: bool = False) -> dict:

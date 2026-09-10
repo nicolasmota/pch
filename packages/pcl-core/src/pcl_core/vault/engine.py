@@ -3,10 +3,15 @@ from __future__ import annotations
 import os
 import sqlite3
 import threading
-from collections.abc import Iterator, Sequence
+from collections.abc import Callable, Iterator, Sequence
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Any
+
+try:
+    from sqlcipher3 import dbapi2 as sqlcipher
+except Exception:
+    sqlcipher = None  # type: ignore[assignment]
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS objects (
@@ -136,9 +141,13 @@ class SerializedConnection:
         self._conn.row_factory = value
 
 
-def _connect_sqlcipher(path: Path, key: bytes):
-    from sqlcipher3 import dbapi2 as sqlcipher
+def cipher_available() -> bool:
+    return sqlcipher is not None
 
+
+def _connect_sqlcipher(path: Path, key: bytes):
+    if sqlcipher is None:
+        raise RuntimeError("sqlcipher3 is not available")
     conn = sqlcipher.connect(str(path), check_same_thread=False, isolation_level=None)
     conn.row_factory = dict_row
     conn.execute(f"PRAGMA key = \"x'{key.hex()}'\"")
@@ -152,6 +161,21 @@ def _connect_sqlite(path: Path) -> sqlite3.Connection:
     conn.row_factory = dict_row
     conn.execute("PRAGMA foreign_keys = ON")
     return conn
+
+
+def _m1_add_source_key(conn: SerializedConnection) -> None:
+    cols = {r["name"] for r in conn.execute("PRAGMA table_info(objects)").fetchall()}
+    if "source_key" not in cols:
+        conn.execute("ALTER TABLE objects ADD COLUMN source_key TEXT")
+    conn.execute(
+        "CREATE UNIQUE INDEX IF NOT EXISTS idx_objects_source_key "
+        "ON objects(source_key) WHERE source_key IS NOT NULL AND source_key != ''"
+    )
+
+
+MIGRATIONS: list[tuple[int, Callable[[SerializedConnection], None]]] = [
+    (1, _m1_add_source_key),
+]
 
 
 class Engine:
@@ -173,19 +197,33 @@ class Engine:
                 self.encrypted = False
         raw.row_factory = dict_row
         self.conn = SerializedConnection(raw, self._lock)
+        self._tx_depth = 0
         self.conn.executescript(SCHEMA)
         self._migrate()
         self.conn.commit()
-        self._tx_depth = 0
+
+    def _schema_version(self) -> int:
+        row = self.conn.execute("SELECT v FROM kv WHERE k = ?", ("schema_version",)).fetchone()
+        if row is None:
+            return 0
+        try:
+            return int(row["v"])
+        except (TypeError, ValueError):
+            return 0
+
+    def _set_schema_version(self, version: int) -> None:
+        self.conn.execute(
+            "INSERT INTO kv (k, v) VALUES (?, ?) ON CONFLICT(k) DO UPDATE SET v = excluded.v",
+            ("schema_version", str(version)),
+        )
 
     def _migrate(self) -> None:
-        cols = {r["name"] for r in self.conn.execute("PRAGMA table_info(objects)").fetchall()}
-        if "source_key" not in cols:
-            self.conn.execute("ALTER TABLE objects ADD COLUMN source_key TEXT")
-        self.conn.execute(
-            "CREATE UNIQUE INDEX IF NOT EXISTS idx_objects_source_key "
-            "ON objects(source_key) WHERE source_key IS NOT NULL AND source_key != ''"
-        )
+        current = self._schema_version()
+        for version, fn in MIGRATIONS:
+            if version > current:
+                fn(self.conn)
+                self._set_schema_version(version)
+                current = version
 
     @contextmanager
     def tx(self) -> Iterator[SerializedConnection]:

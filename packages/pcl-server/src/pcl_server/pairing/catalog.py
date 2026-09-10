@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import sys
+
 from pcl_sdk.capture_guidance import RUNTIME_RULE
 
 ASSISTANTS: list[dict] = [
@@ -55,8 +57,8 @@ def get_assistant(assistant_id: str) -> dict | None:
 
 def _bridge(token: str, base_url: str) -> dict:
     return {
-        "command": "uv",
-        "args": ["run", "pcl-sdk", "mcp-bridge"],
+        "command": sys.executable,
+        "args": ["-m", "pcl_sdk", "mcp-bridge"],
         "env": {"PCH_TOKEN": token, "PCH_BASE": base_url},
     }
 

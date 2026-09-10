@@ -3,26 +3,13 @@ from __future__ import annotations
 import argparse
 import os
 import threading
-import webbrowser
 from pathlib import Path
 
-import uvicorn
 from pcl_core.service import Hub
 from pcl_server.__main__ import run_server
 from pcl_server.rest.app import create_app
 
-from hub_desktop.launch import choose_port, native_gui_available, wait_for_health
-
-
-def _open_ui(url: str, *, force_browser: bool) -> None:
-    if not force_browser and native_gui_available():
-        import webview
-
-        webview.create_window("Personal Context Hub", url)
-        webview.start()
-        return
-    print(f"Opening the Hub in your browser: {url}")
-    webbrowser.open(url)
+from hub_desktop.launch import choose_port, launch_hub, open_ui, wait_for_health
 
 
 def main(argv: list[str] | None = None) -> None:
@@ -54,14 +41,14 @@ def main(argv: list[str] | None = None) -> None:
 
     if already:
         print(f"Hub already running at {url}")
-        _open_ui(url, force_browser=args.browser)
+        open_ui(url, force_browser=args.browser)
         return
 
     if reload:
 
         def open_when_ready() -> None:
             wait_for_health(host, port, timeout=30.0)
-            _open_ui(url, force_browser=True)
+            open_ui(url, force_browser=True)
 
         opener = threading.Thread(target=open_when_ready, daemon=True)
         opener.start()
@@ -69,18 +56,15 @@ def main(argv: list[str] | None = None) -> None:
         return
 
     hub = Hub(Path(args.data_dir), plain=os.environ.get("PCH_PLAIN_SQLITE") == "1")
-    app = create_app(hub)
-    config = uvicorn.Config(app, host=host, port=port, log_level="info")
-    server = uvicorn.Server(config)
-
-    def run() -> None:
-        server.run()
-
-    thread = threading.Thread(target=run, daemon=True)
-    thread.start()
-    wait_for_health(host, port)
-    _open_ui(url, force_browser=args.browser)
-    thread.join()
+    app = create_app(
+        hub,
+        sim_enabled=bool(args.dev),
+        catalog_refresh=bool(args.dev),
+        sim_dir=Path(os.environ.get("PCH_SIM_DIR") or (Path(args.data_dir) / "_sim"))
+        if args.dev
+        else None,
+    )
+    launch_hub(app, host, port, force_browser=args.browser, open_window=True)
 
 
 if __name__ == "__main__":

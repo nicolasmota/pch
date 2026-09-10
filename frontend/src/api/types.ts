@@ -2,6 +2,8 @@ export type SetupStatus = {
   initialized: boolean;
   in_progress: boolean;
   name: string | null;
+  encrypted?: boolean;
+  key_storage?: "keychain" | "file";
 };
 
 export type BootstrapResponse = {

@@ -1,10 +1,10 @@
 [project]
 name = "pcl-sdk"
-version = "0.1.0"
+version = "0.2.0"
 description = "Python SDK and demo agent for Personal Context Hub"
 requires-python = ">=3.14"
 dependencies = [
-    "pcl-core",
+    "pcl-core==0.2.0",
     "httpx>=0.28",
     "mcp>=1.9",
     "pydantic>=2.10",

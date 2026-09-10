@@ -1,6 +1,7 @@
 import socket
 
-from hub_desktop.launch import choose_port, native_gui_available, port_free
+import pytest
+from hub_desktop.launch import choose_port, is_loopback, native_gui_available, port_free
 
 
 def test_port_free_detects_bound_socket():
@@ -25,3 +26,20 @@ def test_choose_port_skips_busy(monkeypatch):
 
 def test_native_gui_probe_does_not_raise():
     assert native_gui_available() in (True, False)
+
+
+@pytest.mark.parametrize(
+    ("host", "expected"),
+    [
+        ("127.0.0.1", True),
+        ("127.5.5.5", True),
+        ("localhost", True),
+        ("::1", True),
+        ("0.0.0.0", False),
+        ("::", False),
+        ("192.168.1.2", False),
+    ],
+)
+def test_is_loopback_table(host: str, expected: bool):
+    assert is_loopback(host) is expected
+

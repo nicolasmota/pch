@@ -10,6 +10,7 @@ from pcl_core.connectors.google_calendar import GoogleCalendarConnector
 from pcl_core.errors import Busy, Revoked, ValidationFailed
 from pcl_core.service import Hub
 
+from pcl_server.marketplace.catalog import refresh_catalog
 from pcl_server.sync.google_fetch import fetch_calendar_events, fetch_gmail_messages
 from pcl_server.sync.oauth import refresh_access_token
 
@@ -124,7 +125,9 @@ def _catalog_due(hub: Hub) -> bool:
     return datetime.now(UTC) >= then + timedelta(hours=12)
 
 
-async def scheduler_loop(hub: Hub, stop: asyncio.Event) -> None:
+async def scheduler_loop(
+    hub: Hub, stop: asyncio.Event, *, catalog_refresh: bool = True
+) -> None:
     while not stop.is_set():
         try:
             for connector in hub.list_connectors():
@@ -142,6 +145,7 @@ async def scheduler_loop(hub: Hub, stop: asyncio.Event) -> None:
                     continue
                 if _plugin_due(plugin):
                     try:
+                        # Circular: plugins.host -> sync.http -> scheduler
                         from pcl_server.plugins.host import run_plugin_sync
 
                         await asyncio.to_thread(
@@ -149,10 +153,8 @@ async def scheduler_loop(hub: Hub, stop: asyncio.Event) -> None:
                         )
                     except Exception:
                         log.exception("scheduled plugin sync failed for %s", plugin.get("id"))
-            if _catalog_due(hub):
+            if catalog_refresh and _catalog_due(hub):
                 try:
-                    from pcl_server.marketplace.catalog import refresh_catalog
-
                     await asyncio.to_thread(refresh_catalog, hub)
                 except Exception:
                     log.exception("catalog refresh failed")

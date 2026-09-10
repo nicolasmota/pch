@@ -42,7 +42,8 @@ from pcl_server.sync.scheduler import scheduler_loop
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     stop = asyncio.Event()
-    task = asyncio.create_task(scheduler_loop(app.state.hub, stop))
+    refresh = bool(getattr(app.state, "catalog_refresh", True))
+    task = asyncio.create_task(scheduler_loop(app.state.hub, stop, catalog_refresh=refresh))
     try:
         yield
     finally:
@@ -62,18 +63,38 @@ def create_app(
     data_dir: Path | None = None,
     sim_hub: Hub | None = None,
     sim_dir: Path | None = None,
+    sim_enabled: bool | None = None,
+    catalog_refresh: bool | None = None,
 ) -> FastAPI:
     hub = hub or Hub(data_dir or Path.home() / ".pch", plain=True)
-    if sim_hub is None:
-        directory = sim_dir or Path(os.environ.get("PCH_SIM_DIR") or (hub.data_dir / "_sim"))
-        sim_hub = Hub(directory, plain=True)
+    if sim_hub is not None:
+        sim_enabled = True
+    elif sim_enabled is None:
+        sim_enabled = os.environ.get("PCH_SIM_ENABLED") == "1"
+    if catalog_refresh is None:
+        catalog_refresh = os.environ.get("PCH_CATALOG_REFRESH") == "1"
+
+    resolved_sim_hub: Hub | None = None
+    resolved_sim_dir: Path | None = None
+    if sim_enabled:
+        if sim_hub is not None:
+            resolved_sim_hub = sim_hub
+            resolved_sim_dir = sim_hub.data_dir
+        else:
+            resolved_sim_dir = sim_dir or Path(
+                os.environ.get("PCH_SIM_DIR") or (hub.data_dir / "_sim")
+            )
+            resolved_sim_hub = None
     try:
         migrate_connectors(hub)
     except Exception:
         pass
-    app = FastAPI(title="Personal Context Layer", version="0.1.0", lifespan=lifespan)
+    app = FastAPI(title="Personal Context Layer", version="0.2.0", lifespan=lifespan)
     app.state.hub = hub
-    app.state.sim_hub = sim_hub
+    app.state.sim_enabled = bool(sim_enabled)
+    app.state.catalog_refresh = bool(catalog_refresh)
+    app.state.sim_hub = resolved_sim_hub
+    app.state.sim_dir = resolved_sim_dir
     app.state.sim_session = None
     app.state.mcp = ToolHub(hub)
     app.add_exception_handler(PclError, pcl_error_handler)
@@ -139,4 +160,9 @@ def dev_app() -> FastAPI:
     data_dir = Path(os.environ.get("PCH_DATA_DIR") or (Path.home() / ".pch"))
     sim_dir = Path(os.environ.get("PCH_SIM_DIR") or (Path.home() / ".pch-sim"))
     plain = os.environ.get("PCH_PLAIN_SQLITE") == "1"
-    return create_app(Hub(data_dir, plain=plain), sim_dir=sim_dir)
+    return create_app(
+        Hub(data_dir, plain=plain),
+        sim_dir=sim_dir,
+        sim_enabled=True,
+        catalog_refresh=True,
+    )

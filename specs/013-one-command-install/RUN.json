@@ -1,0 +1,205 @@
+{
+  "schema_version": 1,
+  "feature_dir": "specs/013-one-command-install",
+  "mode": "full",
+  "source": "dir",
+  "source_value": "specs/013-one-command-install",
+  "current_stage": "complete",
+  "status": "complete",
+  "stop_reason": null,
+  "refuse_reason": null,
+  "bar_path": "specs/013-one-command-install/PLAN-BAR.md",
+  "bar_sha256": "b66b8e4072a73d5263bfb95bbfd40a224ca3163a6e6ee0d2fc9b81d6e132a505",
+  "gauntlet_round": 2,
+  "test_repair_round": 0,
+  "stages": {
+    "specify": {
+      "id": "specify",
+      "outcome": null,
+      "started_at": null,
+      "ended_at": null,
+      "evidence": null
+    },
+    "clarify": {
+      "id": "clarify",
+      "outcome": null,
+      "started_at": null,
+      "ended_at": null,
+      "evidence": null
+    },
+    "freeze_bar": {
+      "id": "freeze_bar",
+      "outcome": "pass",
+      "started_at": null,
+      "ended_at": "2026-09-07T17:55:29Z",
+      "evidence": null
+    },
+    "plan": {
+      "id": "plan",
+      "outcome": "pass",
+      "started_at": null,
+      "ended_at": "2026-09-07T18:39:46Z",
+      "evidence": null
+    },
+    "gauntlet": {
+      "id": "gauntlet",
+      "outcome": "pass",
+      "started_at": null,
+      "ended_at": "2026-09-07T18:44:18Z",
+      "evidence": {
+        "verdicts": [
+          {
+            "critic_id": "A",
+            "round": 0,
+            "verdict": "LOSE",
+            "failing_criteria": [
+              "6",
+              "8"
+            ]
+          },
+          {
+            "critic_id": "B",
+            "round": 0,
+            "verdict": "LOSE",
+            "failing_criteria": [
+              "5",
+              "6",
+              "13",
+              "14"
+            ]
+          },
+          {
+            "critic_id": "A",
+            "round": 1,
+            "verdict": "LOSE",
+            "failing_criteria": [
+              "5",
+              "13",
+              "14",
+              "15"
+            ]
+          },
+          {
+            "critic_id": "B",
+            "round": 1,
+            "verdict": "LOSE",
+            "failing_criteria": [
+              "5",
+              "9",
+              "13",
+              "14"
+            ]
+          },
+          {
+            "critic_id": "A",
+            "round": 2,
+            "verdict": "LOSE",
+            "failing_criteria": [
+              "4",
+              "14"
+            ]
+          },
+          {
+            "critic_id": "B",
+            "round": 2,
+            "verdict": "LOSE",
+            "failing_criteria": [
+              "4",
+              "13",
+              "14"
+            ]
+          },
+          {
+            "critic_id": "A",
+            "round": 3,
+            "verdict": "WIN",
+            "failing_criteria": []
+          },
+          {
+            "critic_id": "B",
+            "round": 3,
+            "verdict": "WIN",
+            "failing_criteria": []
+          }
+        ]
+      }
+    },
+    "tasks": {
+      "id": "tasks",
+      "outcome": "pass",
+      "started_at": null,
+      "ended_at": "2026-09-07T18:45:17Z",
+      "evidence": null
+    },
+    "analyze": {
+      "id": "analyze",
+      "outcome": "pass",
+      "started_at": null,
+      "ended_at": "2026-09-07T18:45:27Z",
+      "evidence": null
+    },
+    "implement": {
+      "id": "implement",
+      "outcome": "pass",
+      "started_at": null,
+      "ended_at": "2026-09-07T19:08:55Z",
+      "evidence": null
+    },
+    "test": {
+      "id": "test",
+      "outcome": "pass",
+      "started_at": null,
+      "ended_at": "2026-09-07T19:09:00Z",
+      "evidence": {
+        "command": "make test",
+        "exit_code": 0,
+        "summary": "273 passed, 1 skipped. Feature ruff clean. Repo-wide make lint still fails on pre-existing E501/I001 in untouched files and pre-existing eslint set-state-in-effect.",
+        "recorded_at": "2026-09-07T19:09:00Z"
+      }
+    },
+    "delivery": {
+      "id": "delivery",
+      "outcome": "pass",
+      "started_at": null,
+      "ended_at": "2026-09-07T19:09:10Z",
+      "evidence": {
+        "sc_results": {
+          "SC-001": "pass",
+          "SC-002": "pass",
+          "SC-003": "pass",
+          "SC-004": "pass",
+          "SC-005": "pass",
+          "SC-006": "pass",
+          "SC-007": "pass",
+          "SC-008": "pass"
+        },
+        "red_before_green": {
+          "SC-001": true,
+          "SC-002": true,
+          "SC-003": true,
+          "SC-004": true,
+          "SC-005": true,
+          "SC-006": true,
+          "SC-007": true,
+          "SC-008": true
+        }
+      }
+    },
+    "converge": {
+      "id": "converge",
+      "outcome": null,
+      "started_at": null,
+      "ended_at": null,
+      "evidence": null
+    },
+    "complete": {
+      "id": "complete",
+      "outcome": "pass",
+      "started_at": null,
+      "ended_at": null,
+      "evidence": null
+    }
+  },
+  "unmet_items": [],
+  "updated_at": "2026-09-07T19:09:10Z"
+}

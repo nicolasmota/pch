@@ -61,3 +61,9 @@ def load_or_create_key(data_dir: Path, passphrase: str | None = None) -> bytes:
 
 def fingerprint(key: bytes) -> str:
     return hashlib.sha256(key).hexdigest()[:16]
+
+
+def key_storage(data_dir: Path) -> str:
+    if (data_dir / "vault.key").exists():
+        return "file"
+    return "keychain"

@@ -1,9 +1,37 @@
 from __future__ import annotations
 
+import ipaddress
 import socket
+import sys
+import threading
 import time
 import urllib.error
 import urllib.request
+import webbrowser
+
+import uvicorn
+
+try:
+    import webview
+except Exception:
+    webview = None
+
+
+def is_loopback(host: str) -> bool:
+    candidate = host.strip().strip("[]")
+    if candidate.lower() == "localhost":
+        return True
+    try:
+        return ipaddress.ip_address(candidate).is_loopback
+    except ValueError:
+        return False
+
+
+def bind_host(host: str) -> str:
+    """Packaged serve always binds IPv4 loopback; ::1 is accepted as policy only."""
+    if host.strip().strip("[]") in {"::1"}:
+        return "127.0.0.1"
+    return host
 
 
 def port_free(host: str, port: int) -> bool:
@@ -59,4 +87,63 @@ def native_gui_available() -> bool:
 
         return True
     except ImportError:
-        return False
+        pass
+    if sys.platform == "darwin":
+        try:
+            import WebKit  # noqa: F401
+
+            return True
+        except ImportError:
+            try:
+                import objc  # noqa: F401
+
+                return True
+            except ImportError:
+                return False
+    if sys.platform == "win32":
+        try:
+            import webview.platforms.winforms  # noqa: F401
+
+            return True
+        except Exception:
+            return False
+    return False
+
+
+def open_ui(url: str, *, force_browser: bool) -> None:
+    if not force_browser and native_gui_available() and webview is not None:
+        webview.create_window("Personal Context Hub", url)
+        webview.start()
+        return
+    print(f"Opening the Hub in your browser: {url}")
+    webbrowser.open(url)
+
+
+def launch_hub(
+    app,
+    host: str,
+    port: int,
+    *,
+    force_browser: bool = False,
+    open_window: bool = True,
+) -> None:
+    bound = bind_host(host)
+    chosen, already = choose_port(bound, port)
+    url = f"http://{bound}:{chosen}/"
+    if already:
+        print(f"Hub already running at {url}")
+        if open_window:
+            open_ui(url, force_browser=force_browser)
+        return
+    config = uvicorn.Config(app, host=bound, port=chosen, log_level="info")
+    server = uvicorn.Server(config)
+
+    def run() -> None:
+        server.run()
+
+    thread = threading.Thread(target=run, daemon=True)
+    thread.start()
+    wait_for_health(bound, chosen)
+    if open_window:
+        open_ui(url, force_browser=force_browser)
+    thread.join()

@@ -12,6 +12,21 @@ import PageHeader from "../components/PageHeader";
 import Spinner from "../components/Spinner";
 import { useApi } from "../hooks/useApi";
 
+function keyStorageLine(storage: SetupStatus["key_storage"]): string | null {
+  switch (storage) {
+    case "keychain":
+      return "Key stored in your system keychain";
+    case "file":
+      return "Key stored in a private file in ~/.pch";
+    case undefined:
+      return null;
+    default: {
+      const _never: never = storage;
+      return _never;
+    }
+  }
+}
+
 export default function Setup() {
   const navigate = useNavigate();
   const { data: status, loading, error: loadError, reload } = useApi<SetupStatus>(() =>
@@ -59,6 +74,7 @@ export default function Setup() {
 
   const initialized = Boolean(status?.initialized);
   const ownerName = status?.name?.trim() || "";
+  const keyLine = keyStorageLine(status?.key_storage);
 
   return (
     <section className="space-y-6">
@@ -73,6 +89,7 @@ export default function Setup() {
       {loadError ? <Alert tone="error">{loadError}</Alert> : null}
       {error ? <Alert tone="error">{error}</Alert> : null}
       {msg ? <Alert tone="success">{msg}</Alert> : null}
+      {keyLine ? <p className="text-sm text-muted">{keyLine}</p> : null}
 
       {initialized ? (
         <Card className="space-y-4">

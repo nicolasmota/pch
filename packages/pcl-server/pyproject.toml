@@ -1,12 +1,12 @@
 [project]
 name = "pcl-server"
-version = "0.1.0"
+version = "0.2.0"
 description = "Local PCL service: FastAPI control plane and MCP server"
 requires-python = ">=3.14"
 dependencies = [
-        "pcl-core",
-        "pca",
-        "pcl-sdk",
+        "pcl-core==0.2.0",
+        "pcl-pca==0.2.0",
+        "pcl-sdk==0.2.0",
     "fastapi>=0.115",
     "uvicorn>=0.34",
     "watchfiles>=1.0",
@@ -24,10 +24,14 @@ pcl-server = "pcl_server.__main__:main"
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
+[tool.hatch.build]
+ignore-vcs = true
+
 [tool.hatch.build.targets.wheel]
 packages = ["src/pcl_server"]
+artifacts = ["src/pcl_server/static/**"]
 
 [tool.uv.sources]
 pcl-core = { workspace = true }
-pca = { workspace = true }
+pcl-pca = { workspace = true }
 pcl-sdk = { workspace = true }

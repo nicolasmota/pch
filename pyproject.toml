@@ -1,15 +1,15 @@
 [project]
-name = "personal-context-hub"
-version = "0.1.0"
+name = "pch-workspace"
+version = "0.2.0"
 description = "Personal Context Hub — local-first personal context for any agent"
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
     "pcl-core",
     "pcl-server",
-    "pca",
+    "pcl-pca",
     "pcl-sdk",
-    "hub-desktop",
+    "personal-context-hub",
 ]
 
 [project.optional-dependencies]
@@ -23,6 +23,9 @@ dev = [
     "mypy>=1.14",
 ]
 
+[tool.uv]
+package = false
+
 [tool.uv.workspace]
 members = [
     "packages/pcl-core",
@@ -35,9 +38,9 @@ members = [
 [tool.uv.sources]
 pcl-core = { workspace = true }
 pcl-server = { workspace = true }
-pca = { workspace = true }
+pcl-pca = { workspace = true }
 pcl-sdk = { workspace = true }
-hub-desktop = { workspace = true }
+personal-context-hub = { workspace = true }
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

@@ -12,7 +12,7 @@ FRONTEND ?= frontend
 .DEFAULT_GOAL := help
 
 .PHONY: help install sync frontend lint format test test-forbidden test-perf \
-        test-all serve desktop openapi demo-agent bridge clean
+        test-all serve desktop openapi demo-agent bridge clean release smoke
 
 help: ## Show this help
 	@awk 'BEGIN {FS = ":.*##"; printf "\nTargets:\n"} \
@@ -68,6 +68,14 @@ demo-agent: ## Pair the reference agent (CODE= from Hub pairing link)
 bridge: ## Run the MCP stdio bridge (TOKEN= from a connection recipe)
 	@test -n "$(TOKEN)" || (echo "usage: make bridge TOKEN=<connection-token>"; exit 1)
 	PCH_TOKEN=$(TOKEN) PCH_BASE=http://$(HOST):$(PORT) $(UV) run pcl-sdk mcp-bridge
+
+release: frontend ## Build wheels, gate them, and publish
+	$(UV) build --all-packages
+	$(UV) run python scripts/check_release.py
+	$(UV) publish
+
+smoke: ## Headless packaged smoke (health, SPA, 001/004 HTTP)
+	$(UV) run pch smoke
 
 clean: ## Remove caches, build artifacts, and the local venv
 	rm -rf .venv .pytest_cache .mypy_cache .ruff_cache

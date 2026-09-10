@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from pcl_core.errors import Revoked, ValidationFailed
 from pcl_core.service import Hub
 from pydantic import BaseModel
@@ -9,6 +9,17 @@ from pcl_server.pairing.catalog import get_assistant, list_assistants, render_re
 from pcl_server.rest.auth import current_actor, get_hub, require_owner
 
 router = APIRouter(tags=["connections"])
+
+
+def request_base_url(request: Request) -> str:
+    hostname = request.url.hostname or "127.0.0.1"
+    scheme = request.url.scheme or "http"
+    port = request.url.port
+    if hostname in {"testserver", "test"}:
+        return "http://127.0.0.1:8765"
+    if port is None:
+        return f"{scheme}://{hostname}"
+    return f"{scheme}://{hostname}:{port}"
 
 
 class PairBody(BaseModel):
@@ -48,6 +59,7 @@ def catalog_assistants(_o: str = Depends(require_owner)) -> list[dict]:
 def connection_recipe(
     conn_id: str,
     body: RecipeBody,
+    request: Request,
     hub: Hub = Depends(get_hub),
     _o: str = Depends(require_owner),
 ) -> dict:
@@ -56,7 +68,7 @@ def connection_recipe(
         raise ValidationFailed("unknown or unsupported assistant")
     hub.store.get(conn_id)
     token = hub.issue_connection_token(conn_id)
-    recipe = render_recipe(body.assistant, token, "http://127.0.0.1:8765")
+    recipe = render_recipe(body.assistant, token, request_base_url(request))
     hub.recipe_issued(conn_id, body.assistant)
     return recipe
 

@@ -1,6 +1,6 @@
 [project]
 name = "pcl-core"
-version = "0.1.0"
+version = "0.2.0"
 description = "Personal Context Layer trust kernel: vault, policy, memory, retrieval, audit"
 requires-python = ">=3.14"
 dependencies = [

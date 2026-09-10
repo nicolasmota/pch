@@ -2,13 +2,26 @@
 
 Local-first home for your personal context. Agents connect; the context stays yours.
 
-## Prerequisites
+## Install
+
+Needs [uv](https://docs.astral.sh/uv/getting-started/installation/) (one line to install). Then:
+
+    uvx personal-context-hub
+
+The Hub opens on your machine. No account, no API key, nothing leaves your device.
+
+Next time: `pch` · Upgrade: `uv tool upgrade personal-context-hub` · Remove: `pch uninstall`
+(your data stays in `~/.pch` unless you add `--purge-data`).
+
+## Contributing (from source)
+
+### Prerequisites
 
 - Python 3.14
 - [uv](https://docs.astral.sh/uv/)
 - Node.js 22+ (UI build only; not required at runtime)
 
-## Setup
+### Setup
 
 ```bash
 make install          # uv sync + frontend build
@@ -43,7 +56,7 @@ Reference agent:
 uv run pcl-sdk demo-agent --pair <link>
 ```
 
-## Tests
+### Tests
 
 ```bash
 uv run pytest
@@ -53,7 +66,7 @@ uv run pytest -m perf
 
 See `specs/001-personal-context-hub/quickstart.md` for the six validation scenarios.
 
-## Connect a real assistant (Cursor)
+### Connect a real assistant (Cursor)
 
 1. Start the hub: `make serve`
 2. Open Connections, create a pairing link, pick **Cursor**, generate the recipe, copy the JSON.
@@ -62,7 +75,7 @@ See `specs/001-personal-context-hub/quickstart.md` for the six validation scenar
 
 The bridge is `uv run pcl-sdk mcp-bridge` with `PCH_TOKEN` and `PCH_BASE`. Convenience: `make bridge TOKEN=...`
 
-## Google Calendar / Gmail
+### Google Calendar / Gmail
 
 Google requires **your** OAuth client. The Hub never ships a shared client ID (that is what caused `invalid_client`).
 
@@ -83,6 +96,6 @@ Google requires **your** OAuth client. The Hub never ships a shared client ID (t
 
 Calendar events import as `private`. Gmail imports only the labels/senders/dates you select, as `sensitive` artifacts.
 
-## Plugins
+### Plugins
 
 Optional import capabilities run as sandboxed plugins. See `plugins/README.md` for the developer kit (`pcl-sdk plugin new|validate|pack`) and bundled Calendar/Gmail/RSS plugins. The Hub UI has **Plugins** and **Marketplace** pages.

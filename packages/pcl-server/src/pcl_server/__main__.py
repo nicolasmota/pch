@@ -1,12 +1,25 @@
 from __future__ import annotations
 
 import argparse
+import ipaddress
 import os
 from pathlib import Path
 
 import uvicorn
 
 from pcl_server.rest.app import dev_app
+
+LOOPBACK_MSG = "The Hub is not a public server; it binds loopback only."
+
+
+def is_loopback_host(host: str) -> bool:
+    candidate = host.strip().strip("[]")
+    if candidate.lower() == "localhost":
+        return True
+    try:
+        return ipaddress.ip_address(candidate).is_loopback
+    except ValueError:
+        return False
 
 
 def _reload_dirs() -> list[str]:
@@ -53,8 +66,12 @@ def main(argv: list[str] | None = None) -> None:
     )
     parser.add_argument("--reload", action=argparse.BooleanOptionalAction, default=True)
     args = parser.parse_args(argv)
+    if not is_loopback_host(args.host):
+        print(LOOPBACK_MSG)
+        raise SystemExit(2)
+    bind_host = "127.0.0.1" if args.host in {"::1", "[::1]"} else args.host
     os.environ["PCH_DATA_DIR"] = args.data_dir
-    run_server(args.host, args.port, reload=args.reload)
+    run_server(bind_host, args.port, reload=args.reload)
 
 
 if __name__ == "__main__":

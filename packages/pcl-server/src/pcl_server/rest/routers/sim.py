@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, Request
+from pathlib import Path
+
+from fastapi import APIRouter, Depends, HTTPException, Request
 from pcl_core.errors import NotFound, ValidationFailed
 from pcl_core.service import Hub
 from pcl_sdk.sim.records import load_run, load_ticks
@@ -9,11 +11,27 @@ from pcl_sdk.sim.runner import start_threaded
 
 from pcl_server.rest.auth import require_owner
 
-router = APIRouter(tags=["sim"])
+SIM_DISABLED = "simulation disabled; run hub-desktop --dev or set PCH_SIM_ENABLED=1"
+
+
+def require_sim(request: Request) -> None:
+    if not getattr(request.app.state, "sim_enabled", False):
+        raise HTTPException(status_code=404, detail=SIM_DISABLED)
+
+
+router = APIRouter(tags=["sim"], dependencies=[Depends(require_sim)])
 
 
 def _sim_hub(request: Request) -> Hub:
-    return request.app.state.sim_hub
+    existing = getattr(request.app.state, "sim_hub", None)
+    if existing is not None:
+        return existing
+    sim_dir = getattr(request.app.state, "sim_dir", None)
+    if sim_dir is None:
+        raise HTTPException(status_code=404, detail=SIM_DISABLED)
+    hub = Hub(Path(sim_dir), plain=True)
+    request.app.state.sim_hub = hub
+    return hub
 
 
 @router.post("/sim/runs")
