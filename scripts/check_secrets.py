@@ -9,7 +9,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-
 # Deny-list tokens documented for tests and contributors:
 # .env, google_oauth.json, .cursor/mcp.json, .pch, .pch-sim, .vault
 DENY_SUFFIX_GLOBS = (

@@ -5,7 +5,6 @@ import sys
 from pathlib import Path
 
 import pytest
-
 from pcl_core.service import Hub
 
 os.environ.setdefault("PCH_PLUGIN_SANDBOX", "0")

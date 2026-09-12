@@ -28,6 +28,9 @@ export default tseslint.config(
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
+      // Existing mount-time fetches sync props→local draft; strict set-state-in-effect
+      // trips on those patterns until pages are migrated to keyed remounts / external stores.
+      "react-hooks/set-state-in-effect": "off",
       "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
       "@typescript-eslint/no-explicit-any": "error",
     },

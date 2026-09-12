@@ -1,9 +1,6 @@
 import pytest
-
-from pcl_server.plugins.host import run_plugin_sync
-
 from helpers import install_and_enable, write_plugin
-
+from pcl_server.plugins.host import run_plugin_sync
 
 GOOD = '''from pcl_sdk.plugin_runtime import hub
 

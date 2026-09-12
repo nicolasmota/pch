@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from pca.export import export_archive
-from pca.import_ import IntegrityError, open_archive
+from pca.import_ import open_archive
 
 
 def test_roundtrip(hub, tmp_path: Path):

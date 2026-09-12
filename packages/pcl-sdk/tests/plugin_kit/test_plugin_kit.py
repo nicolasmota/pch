@@ -1,7 +1,6 @@
 from pathlib import Path
 
 import pytest
-
 from pcl_sdk.plugin_kit import cmd_new, cmd_pack, cmd_validate
 
 

@@ -4,9 +4,11 @@ src = ["packages", "apps"]
 
 [lint]
 select = ["E", "F", "I", "UP", "B"]
+ignore = ["E501"]
 
 [lint.per-file-ignores]
 "**/tests/**" = ["B018", "E501"]
 "**/rest/routers/**" = ["B008"]
 "**/rest/app.py" = ["B008"]
+"**/rest/auth.py" = ["B008"]
 "packages/pcl-core/src/pcl_core/service.py" = ["E501", "B007", "F841"]

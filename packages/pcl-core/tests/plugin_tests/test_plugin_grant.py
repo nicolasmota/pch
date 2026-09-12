@@ -1,6 +1,11 @@
 import pytest
 from pcl_core.errors import PolicyDenied
-from pcl_core.policy.plugin import check_host, check_produce, manifest_from_snapshot, permission_diff
+from pcl_core.policy.plugin import (
+    check_host,
+    check_produce,
+    manifest_from_snapshot,
+    permission_diff,
+)
 from pcl_core.schema.plugin import PluginManifest
 
 

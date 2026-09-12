@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, Header, Query
-
+from fastapi import APIRouter, Depends, Header
 from pcl_core.errors import Revoked
-from pcl_core.service import Hub, OWNER
-from pcl_server.rest.auth import current_actor, get_hub, require_owner
+from pcl_core.service import Hub
+
+from pcl_server.rest.auth import get_hub, require_owner
 
 router = APIRouter(tags=["setup"])
 

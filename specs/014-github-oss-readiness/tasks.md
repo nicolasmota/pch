@@ -18,7 +18,7 @@
 
 **Purpose**: Test package directory for OSS contract tests
 
-- [ ] T001 Create `packages/pcl-sdk/tests/oss/` with `__init__.py` (empty)
+- [x] T001 Create `packages/pcl-sdk/tests/oss/` with `__init__.py` (empty)
 
 ---
 
@@ -32,13 +32,13 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T002 [P] Secrets checker tests in `packages/pcl-sdk/tests/oss/test_secrets_check.py` (clean tree exit 0; tracked `.env` fails; tracked `.pch/` or `.pch-sim/` path fails; deny-list covers contract patterns)
+- [x] T002 [P] Secrets checker tests in `packages/pcl-sdk/tests/oss/test_secrets_check.py` (clean tree exit 0; tracked `.env` fails; tracked `.pch/` or `.pch-sim/` path fails; deny-list covers contract patterns)
 
 ### Implementation for Foundational
 
-- [ ] T003 Implement `scripts/check_secrets.py` per `contracts/oss-readiness.md` deny-list (incl. Hub data dirs `.pch/` / `.pch-sim/`)
-- [ ] T004 Add `check-secrets` target to `Makefile` invoking the script
-- [ ] T005 Align `.gitignore` with deny-list (`pairing_token*`, `.pch/`, `.pch-sim/`, existing vault/env/oauth/mcp rules)
+- [x] T003 Implement `scripts/check_secrets.py` per `contracts/oss-readiness.md` deny-list (incl. Hub data dirs `.pch/` / `.pch-sim/`)
+- [x] T004 Add `check-secrets` target to `Makefile` invoking the script
+- [x] T005 Align `.gitignore` with deny-list (`pairing_token*`, `.pch/`, `.pch-sim/`, existing vault/env/oauth/mcp rules)
 
 **Checkpoint**: `make check-secrets` exits 0 on clean tree; pytest secrets module green
 
@@ -52,13 +52,13 @@
 
 ### Tests for User Story 1
 
-- [ ] T006 [P] [US1] Community/license/README assertions in `packages/pcl-sdk/tests/oss/test_community_files.py` (LICENSE MIT markers; five pyprojects `license = "MIT"`; README answers four questions + links)
+- [x] T006 [P] [US1] Community/license/README assertions in `packages/pcl-sdk/tests/oss/test_community_files.py` (LICENSE MIT markers; five pyprojects `license = "MIT"`; README answers four questions + links)
 
 ### Implementation for User Story 1
 
-- [ ] T007 [P] [US1] Add root `LICENSE` (MIT full text)
-- [ ] T008 [P] [US1] Set `license = "MIT"` on `packages/pcl-core/pyproject.toml`, `packages/pcl-server/pyproject.toml`, `packages/pcl-sdk/pyproject.toml`, `packages/pca/pyproject.toml`, `apps/hub-desktop/pyproject.toml`
-- [ ] T009 [US1] Edit `README.md` for SC-001 front door (purpose, local-first/`~/.pch`, install + from-source pointer, MIT, links to Contributing/Security/CoC)
+- [x] T007 [P] [US1] Add root `LICENSE` (MIT full text)
+- [x] T008 [P] [US1] Set `license = "MIT"` on `packages/pcl-core/pyproject.toml`, `packages/pcl-server/pyproject.toml`, `packages/pcl-sdk/pyproject.toml`, `packages/pca/pyproject.toml`, `apps/hub-desktop/pyproject.toml`
+- [x] T009 [US1] Edit `README.md` for SC-001 front door (purpose, local-first/`~/.pch`, install + from-source pointer, MIT, links to Contributing/Security/CoC)
 
 **Checkpoint**: Cold visitor can answer four README questions; SC-002/SC-003 license portion green
 
@@ -72,13 +72,13 @@
 
 ### Tests for User Story 2
 
-- [ ] T010 [P] [US2] Extend `packages/pcl-sdk/tests/oss/test_community_files.py` for CONTRIBUTING presence/sections and template secrets warnings (SC-005)
+- [x] T010 [P] [US2] Extend `packages/pcl-sdk/tests/oss/test_community_files.py` for CONTRIBUTING presence/sections and template secrets warnings (SC-005)
 
 ### Implementation for User Story 2
 
-- [ ] T011 [P] [US2] Write `CONTRIBUTING.md` (prerequisites, make install/test/lint/check-secrets, PR expectations, must-not-commit, loopback, imported-is-data, coding-agent-not-client)
-- [ ] T012 [P] [US2] Add `.github/ISSUE_TEMPLATE/bug.yml` (+ optional `config.yml`) with secrets warning checkbox
-- [ ] T013 [P] [US2] Add `.github/PULL_REQUEST_TEMPLATE.md` with summary, test/lint evidence, no-secrets confirmation
+- [x] T011 [P] [US2] Write `CONTRIBUTING.md` (prerequisites, make install/test/lint/check-secrets, PR expectations, must-not-commit, loopback, imported-is-data, coding-agent-not-client)
+- [x] T012 [P] [US2] Add `.github/ISSUE_TEMPLATE/bug.yml` (+ optional `config.yml`) with secrets warning checkbox
+- [x] T013 [P] [US2] Add `.github/PULL_REQUEST_TEMPLATE.md` with summary, test/lint evidence, no-secrets confirmation
 
 **Checkpoint**: Contributor path documented; templates warn against vault dumps
 
@@ -92,13 +92,13 @@
 
 ### Tests for User Story 3
 
-- [ ] T014 [P] [US3] Extend `packages/pcl-sdk/tests/oss/test_community_files.py` for SECURITY, CoC, and `.github/workflows/ci.yml` gates
+- [x] T014 [P] [US3] Extend `packages/pcl-sdk/tests/oss/test_community_files.py` for SECURITY, CoC, and `.github/workflows/ci.yml` gates
 
 ### Implementation for User Story 3
 
-- [ ] T015 [P] [US3] Write `SECURITY.md` (supported versions, GitHub private reporting, in/out of scope)
-- [ ] T016 [P] [US3] Write `CODE_OF_CONDUCT.md` (Contributor Covenant adaptation + enforcement contact)
-- [ ] T017 [US3] Add `.github/workflows/ci.yml` (PR + push main: Node build as needed, uv, `make lint`, `make test`, `make check-secrets`)
+- [x] T015 [P] [US3] Write `SECURITY.md` (supported versions, GitHub private reporting, in/out of scope)
+- [x] T016 [P] [US3] Write `CODE_OF_CONDUCT.md` (Contributor Covenant adaptation + enforcement contact)
+- [x] T017 [US3] Add `.github/workflows/ci.yml` (PR + push main: Node build as needed, uv, `make lint`, `make test`, `make check-secrets`)
 
 **Checkpoint**: Community health complete; CI gates-only
 
@@ -106,9 +106,9 @@
 
 ## Phase 6: Polish & Delivery
 
-- [ ] T018 Run quickstart.md rehearsal checklist; record SC-001 timed README walk notes in delivery evidence
-- [ ] T019 Confirm diff scope is hygiene-only (SC-006); no VISION/ROADMAP product implement
-- [ ] T020 Mark all tasks complete; `make check-secrets && make lint && make test`
+- [x] T018 Run quickstart.md rehearsal checklist; record SC-001 timed README walk notes in delivery evidence
+- [x] T019 Confirm diff scope is hygiene-only (SC-006); no VISION/ROADMAP product implement
+- [x] T020 Mark all tasks complete; `make check-secrets && make lint && make test`
 
 ---
 

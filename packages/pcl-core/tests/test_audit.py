@@ -1,4 +1,3 @@
-from pcl_core.schema.audit import EventKind
 
 
 def test_hash_chain(hub):

@@ -9,10 +9,8 @@ from typing import Any
 
 from pcl_core.service import Hub
 from pcl_core.timeutil import now_iso
-
 from pca.vendor.pam_project import pam_memory_store
 from pca.vendor.ump_project import ump_records
-
 
 PCA_VERSION = "0.1.0"
 
@@ -27,11 +25,12 @@ def _encrypt(data: bytes, passphrase: str) -> bytes:
 
         return age_pass.encrypt(data, passphrase)
     except Exception:
-        from cryptography.fernet import Fernet
-        from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-        from cryptography.hazmat.primitives import hashes
         import base64
         import os
+
+        from cryptography.fernet import Fernet
+        from cryptography.hazmat.primitives import hashes
+        from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
         salt = os.urandom(16)
         kdf = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=salt, iterations=480000)
@@ -41,10 +40,11 @@ def _encrypt(data: bytes, passphrase: str) -> bytes:
 
 def _decrypt(data: bytes, passphrase: str) -> bytes:
     if data.startswith(b"PCH1"):
-        from cryptography.fernet import Fernet
-        from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-        from cryptography.hazmat.primitives import hashes
         import base64
+
+        from cryptography.fernet import Fernet
+        from cryptography.hazmat.primitives import hashes
+        from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
         salt, rest = data[4:20], data[20:]
         kdf = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=salt, iterations=480000)
@@ -78,7 +78,7 @@ def export_archive(hub: Hub, dest: Path, passphrase: str, filters: dict[str, Any
     grouped["versions"] = []
     skip_types = {"shared_state", "connection", "grant", "manifest", "action_intent", "approval"}
     project_filter = filters.get("projects") or filters.get("project")
-    class_max = filters.get("classification_max")
+    _class_max = filters.get("classification_max")  # reserved for export filter
     for row in hub.store.list():
         if row.get("type") in skip_types:
             continue

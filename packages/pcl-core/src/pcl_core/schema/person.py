@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from pcl_core.schema.metadata import UniversalMetadata
 

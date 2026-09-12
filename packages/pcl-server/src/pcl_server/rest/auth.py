@@ -1,9 +1,8 @@
 from __future__ import annotations
 
 from fastapi import Depends, Header, Request
-
 from pcl_core.errors import Revoked
-from pcl_core.service import OWNER, Hub
+from pcl_core.service import Hub
 
 
 def get_hub(request: Request) -> Hub:
