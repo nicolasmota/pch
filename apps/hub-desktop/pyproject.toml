@@ -3,6 +3,7 @@ name = "personal-context-hub"
 version = "0.2.0"
 description = "Personal Context Hub desktop shell"
 requires-python = ">=3.14"
+license = "MIT"
 dependencies = [
     "pcl-server==0.2.0",
     "pywebview>=5.4",

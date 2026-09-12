@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any
 
 from pcl_core.service import Hub
+
 from pcl_server.mcp.resources import audit_resource, brief_resource, profile_resource, self_resource
 from pcl_server.mcp.tools_context import attach_tools
 

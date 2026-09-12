@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends
-from pydantic import BaseModel
 from pcl_core.errors import ReconsentRequired, ValidationFailed
 from pcl_core.policy.plugin import manifest_from_snapshot, permission_diff
 from pcl_core.service import Hub
+from pydantic import BaseModel
 
 from pcl_server.marketplace.catalog import find_listing, load_cached_catalog, refresh_catalog
 from pcl_server.plugins.host import isolation_mode

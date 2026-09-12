@@ -108,7 +108,7 @@ class PluginManifest(BaseModel):
         return value
 
     @classmethod
-    def from_toml_dict(cls, raw: dict) -> "PluginManifest":
+    def from_toml_dict(cls, raw: dict) -> PluginManifest:
         plugin = dict(raw.get("plugin") or raw)
         nested = dict(raw.get("permissions") or {})
         produces = list(nested.get("produces") or [])

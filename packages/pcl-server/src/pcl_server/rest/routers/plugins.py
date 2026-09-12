@@ -3,10 +3,10 @@ from __future__ import annotations
 import base64
 
 from fastapi import APIRouter, Depends, Query
-from pydantic import BaseModel
 from pcl_core.errors import ConsentRequired, NotFound, ValidationFailed
 from pcl_core.schema.audit import EventKind
 from pcl_core.service import Hub
+from pydantic import BaseModel
 
 from pcl_server.plugins.host import isolation_mode, run_plugin_sync
 from pcl_server.plugins.package import load_manifest, manifest_to_snapshot, unpack_package

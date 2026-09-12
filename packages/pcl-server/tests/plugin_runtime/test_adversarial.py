@@ -1,9 +1,7 @@
 import pytest
-
+from helpers import install_and_enable, write_plugin
 from pcl_core.errors import ValidationFailed
 from pcl_server.plugins.host import run_plugin_sync
-
-from helpers import install_and_enable, write_plugin
 
 HANG = """
 import time
@@ -70,6 +68,6 @@ def test_crash_does_not_take_down_hub(plugin_hub, tmp_path):
         [{"type": "artifact", "classification": "personal"}],
     )
     inst = install_and_enable(plugin_hub, root, "test.crash")
-    with pytest.raises(Exception):
+    with pytest.raises(ValidationFailed):
         run_plugin_sync(plugin_hub, inst["id"])
     assert plugin_hub.list_plugins()

@@ -1,7 +1,5 @@
 import pytest
 
-from pcl_core.service import Hub
-
 
 @pytest.mark.perf
 def test_search_scale(tmp_path, hub):

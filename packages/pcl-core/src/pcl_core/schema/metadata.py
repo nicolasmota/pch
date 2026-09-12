@@ -77,7 +77,7 @@ class UniversalMetadata(BaseModel):
     version: int = 1
 
     @model_validator(mode="after")
-    def _inferred_needs_confidence(self) -> "UniversalMetadata":
+    def _inferred_needs_confidence(self) -> UniversalMetadata:
         if self.authority == Authority.AGENT_INFERRED and self.confidence is None:
             raise ValueError("confidence required when authority is agent_inferred")
         return self

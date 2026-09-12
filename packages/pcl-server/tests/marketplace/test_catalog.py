@@ -2,7 +2,6 @@ import json
 
 import pytest
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
-
 from pcl_core.errors import IntegrityMismatch
 from pcl_core.service import Hub
 from pcl_server.marketplace.catalog import refresh_catalog, verify_catalog

@@ -1,4 +1,3 @@
-from pcl_core.schema.memory import Memory, MemoryKind, SensitivityFlag
 from pcl_core.timeutil import now_iso
 
 

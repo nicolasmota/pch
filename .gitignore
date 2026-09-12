@@ -25,10 +25,14 @@ packages/pcl-server/src/pcl_server/static/
 *.db-shm
 *.pca
 .vault/
+.pch/
+.pch-sim/
 *.key
 .env
 .env.*
 google_oauth.json
+pairing_token*
+*pairing*token*
 
 # Packaging
 *.spec.bak
@@ -42,3 +46,6 @@ Thumbs.db
 .idea/
 .vscode/
 .cursor/mcp.json
+
+# Speckit feature packs (local process artifacts; not published)
+specs/

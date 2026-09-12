@@ -2,7 +2,6 @@ from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
-
 from pcl_core.service import Hub
 from pcl_server.rest.app import create_app
 

@@ -55,7 +55,6 @@ _STOP = frozenset(
         "uma",
         "de",
         "da",
-        "do",
         "das",
         "dos",
         "e",

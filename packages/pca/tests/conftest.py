@@ -1,7 +1,6 @@
 from pathlib import Path
 
 import pytest
-
 from pcl_core.service import Hub
 
 

@@ -2,7 +2,7 @@
 
 **Status:** vivo · **Atualizado:** 2026-08-26  
 Tese e demo para a comunidade: [`docs/VISION.md`](VISION.md).  
-Isto **não** é spec Speckit. Um epic por vez vira `specs/<nnn>-<nome>/` via `/speckit-specify` → plan → tasks → implement.
+Isto **não** é spec Speckit. Um epic por vez vira um pack local `specs/<nnn>-<nome>/` (gitignored — não publicado) via `/speckit-specify` → plan → tasks → implement.
 
 ---
 

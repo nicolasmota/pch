@@ -1,5 +1,4 @@
 import pytest
-
 from pcl_server.plugins.migrate import migrate_connectors
 from pcl_server.rest.app import create_app
 

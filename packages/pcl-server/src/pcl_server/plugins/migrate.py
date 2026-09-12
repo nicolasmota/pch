@@ -3,9 +3,9 @@ from __future__ import annotations
 from pcl_core.schema.audit import EventKind
 from pcl_core.service import Hub
 
+from pcl_server.plugins.host import isolation_mode
 from pcl_server.plugins.package import load_manifest, manifest_to_snapshot
 from pcl_server.plugins.paths import bundled_dir
-from pcl_server.plugins.host import isolation_mode
 
 KIND_TO_PLUGIN = {
     "calendar": "pcl.google-calendar",

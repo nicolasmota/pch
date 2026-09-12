@@ -12,7 +12,8 @@ FRONTEND ?= frontend
 .DEFAULT_GOAL := help
 
 .PHONY: help install sync frontend lint format test test-forbidden test-perf \
-        test-all serve desktop openapi demo-agent bridge clean release smoke
+        test-all serve desktop openapi demo-agent bridge clean release smoke \
+        check-secrets
 
 help: ## Show this help
 	@awk 'BEGIN {FS = ":.*##"; printf "\nTargets:\n"} \
@@ -26,6 +27,9 @@ sync: ## Install Python 3.14 workspace with uv
 
 frontend: ## Install JS deps and build UI into pcl-server static/
 	cd $(FRONTEND) && $(NPM) ci && $(NPM) run build
+
+check-secrets: ## Fail if git-tracked paths match the secrets deny-list
+	$(UV) run python scripts/check_secrets.py
 
 lint: ## Lint Python with Ruff and frontend with ESLint
 	$(UV) run ruff check packages apps
@@ -56,10 +60,11 @@ desktop: ## Hub with auto-reload (Python + UI watch)
 	(cd $(FRONTEND) && $(NPM) run build:watch) & \
 	$(UV) run hub-desktop --dev --reload --port $(PORT) --data-dir $(DATA_DIR)
 
-openapi: ## Dump OpenAPI 3.1 JSON to specs/.../contracts/openapi.json
+openapi: ## Dump OpenAPI 3.1 JSON to docs/openapi.json
 	$(UV) run python -c "from pathlib import Path; from pcl_core.service import Hub; from pcl_server.rest.app import create_app; import json, tempfile; \
 hub = Hub(Path(tempfile.mkdtemp()), plain=True); \
-Path('specs/001-personal-context-hub/contracts/openapi.json').write_text(json.dumps(create_app(hub).openapi(), indent=2))"
+Path('docs').mkdir(exist_ok=True); \
+Path('docs/openapi.json').write_text(json.dumps(create_app(hub).openapi(), indent=2))"
 
 demo-agent: ## Pair the reference agent (CODE= from Hub pairing link)
 	@test -n "$(CODE)" || (echo "usage: make demo-agent CODE=<pairing-code>"; exit 1)

@@ -1,12 +1,9 @@
 from __future__ import annotations
 
-import json
-
 from fastapi import Request
-from fastapi.responses import JSONResponse, Response
-from starlette.middleware.base import BaseHTTPMiddleware
-
+from fastapi.responses import Response
 from pcl_core.service import Hub
+from starlette.middleware.base import BaseHTTPMiddleware
 
 
 class IdempotencyMiddleware(BaseHTTPMiddleware):
