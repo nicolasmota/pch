@@ -825,11 +825,21 @@ class Hub:
             p = self.store.get(proposal_id)
             if accept:
                 mem = p["proposed_memory"]
+                origin = [
+                    lab
+                    for lab in (mem.get("labels") or [])
+                    if str(lab).startswith("origin:")
+                ]
                 if edits:
                     mem = {**mem, **edits}
                     mem["authority"] = "user_confirmed"
                 else:
                     mem["authority"] = "agent_inferred"
+                labels = list(mem.get("labels") or [])
+                for lab in origin:
+                    if lab not in labels:
+                        labels.append(lab)
+                mem["labels"] = labels
                 mem["type"] = "memory"
                 stored = None
                 subject = mem.get("subject_ref")

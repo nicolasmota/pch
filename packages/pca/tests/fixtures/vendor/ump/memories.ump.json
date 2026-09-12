@@ -1,0 +1,18 @@
+[
+  {
+    "ump": "0.1",
+    "id": "urn:ump:u1",
+    "kind": "semantic",
+    "body": {"text": "Uses a standing desk"},
+    "scope": {"owner": "tester", "visibility": "private"},
+    "time": {"created": "2026-01-01T00:00:00Z"}
+  },
+  {
+    "ump": "0.1",
+    "id": "urn:ump:u2",
+    "kind": "procedural",
+    "body": {"text": "Ships on Thursdays"},
+    "scope": {"owner": "tester", "visibility": "private"},
+    "time": {"created": "2026-01-02T00:00:00Z"}
+  }
+]

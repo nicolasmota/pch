@@ -5,6 +5,7 @@ from pathlib import Path
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 
+from pcl_core.errors import PclError
 from pcl_core.ids import new_id
 from pcl_core.schema.audit import EventKind
 from pcl_core.service import Hub
@@ -28,6 +29,14 @@ class ApplyBody(BaseModel):
     resolutions: list[dict] = []
 
 
+class VendorImportBody(BaseModel):
+    path: str
+
+
+class ArchiveBody(BaseModel):
+    admit: bool
+
+
 @router.post("/export")
 def export(body: ExportBody, hub: Hub = Depends(get_hub), _o: str = Depends(require_owner)) -> dict:
     from pca.export import export_archive
@@ -45,7 +54,10 @@ def stage(body: StageBody, hub: Hub = Depends(get_hub), _o: str = Depends(requir
     from pca.resolve import plan_resolutions
     from pca.untrusted import mark_untrusted
 
-    opened = open_archive(Path(body.path), body.passphrase)
+    try:
+        opened = open_archive(Path(body.path), body.passphrase)
+    except Exception as exc:
+        raise PclError("not_pca", "Not a Portable Context Archive", 400) from exc
     records = [mark_untrusted(r) for r in opened["records"]]
     existing = {r["id"]: r for t in ("memory", "project", "goal") for r in hub.list(t)}
     for t in ("commitment", "decision", "preference", "artifact", "profile", "person"):
@@ -109,3 +121,31 @@ def apply(
         hub.store.put(staging)
         hub.ledger.append(EventKind.IMPORT_APPLIED, "owner", f"imported {applied}", [staging_id])
     return {"applied": applied, "staging_id": staging_id}
+
+
+@router.post("/import/vendor")
+def vendor_import(
+    body: VendorImportBody, hub: Hub = Depends(get_hub), _o: str = Depends(require_owner)
+) -> dict:
+    from pca.vendor.enqueue import enqueue_vendor_import
+
+    return enqueue_vendor_import(hub, Path(body.path))
+
+
+@router.get("/import/vendor/{batch_id}")
+def get_vendor_batch(
+    batch_id: str, hub: Hub = Depends(get_hub), _o: str = Depends(require_owner)
+) -> dict:
+    row = hub.get(batch_id)
+    if row.get("type") != "vendor_import_batch":
+        raise PclError("not_found", "vendor import batch not found", 404)
+    return row
+
+
+@router.post("/import/vendor/{batch_id}/archive")
+def vendor_archive(
+    batch_id: str, body: ArchiveBody, hub: Hub = Depends(get_hub), _o: str = Depends(require_owner)
+) -> dict:
+    from pca.vendor.enqueue import decide_archive
+
+    return decide_archive(hub, batch_id, body.admit)

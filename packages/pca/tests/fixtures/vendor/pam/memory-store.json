@@ -1,0 +1,23 @@
+{
+  "schema": "portable-ai-memory",
+  "schema_version": "1.0",
+  "exported_by": "fixture/1.0.0",
+  "export_date": "2026-09-10T00:00:00Z",
+  "memories": [
+    {
+      "id": "p-1",
+      "type": "preference",
+      "content": "Reads paper books",
+      "provenance": {"platform": "chatgpt", "extraction_method": "api_export"}
+    },
+    {
+      "id": "p-2",
+      "type": "fact",
+      "content": "No meetings Fridays",
+      "provenance": {"platform": "chatgpt", "extraction_method": "api_export"}
+    }
+  ],
+  "relations": [],
+  "conversations_index": [],
+  "integrity": {"algorithm": "sha256", "hash": "00"}
+}

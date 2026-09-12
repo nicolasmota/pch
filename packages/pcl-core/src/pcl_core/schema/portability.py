@@ -27,6 +27,29 @@ class ExportRecord(BaseModel):
     path: str = ""
 
 
+class VendorOriginItem(BaseModel):
+    fingerprint: str
+    original_id: str
+    proposal_id: str | None = None
+    statement_preview: str = ""
+
+
+class VendorImportBatch(BaseModel):
+    id: str
+    space_id: str = "personal"
+    source: str
+    path_basename: str = ""
+    status: str = "enqueued"
+    archive_status: str = "none"
+    memory_item_count: int = 0
+    conversation_count: int = 0
+    proposal_ids: list[str] = Field(default_factory=list)
+    skipped_fingerprints: list[str] = Field(default_factory=list)
+    items: list[VendorOriginItem] = Field(default_factory=list)
+    created_at: str
+    owner: str = ""
+
+
 class ImportStaging(BaseModel):
     id: str
     space_id: str = "personal"

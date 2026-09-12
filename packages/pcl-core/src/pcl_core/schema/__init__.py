@@ -45,7 +45,14 @@ from pcl_core.schema.plugin import (
     PluginState,
     ProducesPermission,
 )
-from pcl_core.schema.portability import ExportRecord, ImportStaging, ResolutionChoice, StagingStatus
+from pcl_core.schema.portability import (
+    ExportRecord,
+    ImportStaging,
+    ResolutionChoice,
+    StagingStatus,
+    VendorImportBatch,
+    VendorOriginItem,
+)
 from pcl_core.schema.preference import Preference
 from pcl_core.schema.profile import Profile
 from pcl_core.schema.project import (
@@ -155,4 +162,6 @@ __all__ = [
     "StateVisibility",
     "TYPE_MODELS",
     "UniversalMetadata",
+    "VendorImportBatch",
+    "VendorOriginItem",
 ]

@@ -10,6 +10,9 @@ from typing import Any
 from pcl_core.service import Hub
 from pcl_core.timeutil import now_iso
 
+from pca.vendor.pam_project import pam_memory_store
+from pca.vendor.ump_project import ump_records
+
 
 PCA_VERSION = "0.1.0"
 
@@ -107,6 +110,25 @@ def export_archive(hub: Hub, dest: Path, passphrase: str, filters: dict[str, Any
         ev_text = "\n".join(_canonical(e) for e in events)
         zf.writestr("events.jsonl", ev_text)
         files["events.jsonl"] = hashlib.sha256(ev_text.encode()).hexdigest()
+        projectable = [
+            row
+            for name in ("memories", "preferences", "profile")
+            for row in grouped.get(name, [])
+        ]
+        pam_doc = pam_memory_store(
+            projectable,
+            exported_by=f"personal-context-hub/{PCA_VERSION}",
+            export_date=now_iso(),
+        )
+        ump_doc = ump_records(projectable, hub.person_id())
+        pam_text = json.dumps(pam_doc, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+        ump_text = json.dumps(ump_doc, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+        pam_member = "interoperability/pam/memory-store.json"
+        ump_member = "interoperability/ump/memories.ump.json"
+        zf.writestr(pam_member, pam_text)
+        files[pam_member] = hashlib.sha256(pam_text.encode()).hexdigest()
+        zf.writestr(ump_member, ump_text)
+        files[ump_member] = hashlib.sha256(ump_text.encode()).hexdigest()
         zf.writestr(
             "schemas/memory.schema.json",
             json.dumps({"title": "memory", "type": "object"}),

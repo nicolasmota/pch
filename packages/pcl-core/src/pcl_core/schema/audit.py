@@ -24,6 +24,8 @@ class EventKind(StrEnum):
     EXPORT_CREATED = "export.created"
     IMPORT_STAGED = "import.staged"
     IMPORT_APPLIED = "import.applied"
+    IMPORT_VENDOR_ENQUEUED = "import.vendor_enqueued"
+    IMPORT_ARCHIVE_DECIDED = "import.archive_decided"
     SETUP = "setup"
     CONNECTOR_CONNECTED = "connector.connected"
     CONNECTOR_DISCONNECTED = "connector.disconnected"

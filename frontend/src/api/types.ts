@@ -191,6 +191,16 @@ export type StagingImport = {
   conflicts?: unknown[];
 };
 
+export type VendorImportBatch = {
+  id: string;
+  source: string;
+  enqueued: number;
+  skipped: number;
+  conversation_count: number;
+  archive_status: string;
+  proposal_ids: string[];
+};
+
 export type ImportApplyResult = {
   applied: number;
   staging_id: string;

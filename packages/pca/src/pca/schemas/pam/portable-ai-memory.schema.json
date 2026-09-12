@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://portable-ai-memory.org/schema/memory-store-min",
+  "title": "PAM v1 memory-store (fields this Hub emits)",
+  "type": "object",
+  "required": ["schema", "schema_version", "exported_by", "export_date", "memories"],
+  "properties": {
+    "schema": { "const": "portable-ai-memory" },
+    "schema_version": { "type": "string" },
+    "exported_by": { "type": "string" },
+    "export_date": { "type": "string" },
+    "memories": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "content", "provenance"],
+        "properties": {
+          "id": { "type": "string" },
+          "type": { "type": "string" },
+          "content": { "type": "string" },
+          "provenance": {
+            "type": "object",
+            "required": ["platform"],
+            "properties": {
+              "platform": { "type": "string" },
+              "extraction_method": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "relations": { "type": "array" },
+    "conversations_index": { "type": "array" },
+    "integrity": { "type": "object" }
+  }
+}

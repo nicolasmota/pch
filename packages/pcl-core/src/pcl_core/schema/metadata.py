@@ -26,6 +26,7 @@ class EntityType(StrEnum):
     AUDIT_EVENT = "audit_event"
     EXPORT = "export"
     IMPORT_STAGING = "import_staging"
+    VENDOR_IMPORT_BATCH = "vendor_import_batch"
     CONNECTOR_ACCOUNT = "connector_account"
     EVENT = "event"
     PLUGIN = "plugin"
