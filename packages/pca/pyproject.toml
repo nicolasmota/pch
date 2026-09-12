@@ -3,6 +3,7 @@ name = "pcl-pca"
 version = "0.2.0"
 description = "Portable Context Archive v0 export/import"
 requires-python = ">=3.14"
+license = "MIT"
 dependencies = [
     "pcl-core==0.2.0",
     "pyrage>=1.2",

@@ -1,6 +1,9 @@
 # Personal Context Hub
 
 Local-first home for your personal context. Agents connect; the context stays yours.
+Your data lives on this device (default `~/.pch`), encrypted; the Hub binds loopback only and is not a public server.
+
+License: [MIT](LICENSE) · [Contributing](CONTRIBUTING.md) · [Security](SECURITY.md) · [Code of Conduct](CODE_OF_CONDUCT.md)
 
 ## Install
 
@@ -15,6 +18,8 @@ Next time: `pch` · Upgrade: `uv tool upgrade personal-context-hub` · Remove: `
 
 ## Contributing (from source)
 
+Full guide: [CONTRIBUTING.md](CONTRIBUTING.md) (setup, test, lint, secrets check, PR expectations).
+
 ### Prerequisites
 
 - Python 3.14
@@ -28,6 +33,8 @@ make install          # uv sync + frontend build
 make serve            # API with auto-reload (Python + UI watch)
 make desktop          # Hub with auto-reload (Python + UI watch)
 make test             # pytest
+make lint             # ruff + eslint
+make check-secrets    # tracked-path secrets deny-list
 make help             # all targets
 ```
 

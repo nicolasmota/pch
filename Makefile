@@ -12,7 +12,8 @@ FRONTEND ?= frontend
 .DEFAULT_GOAL := help
 
 .PHONY: help install sync frontend lint format test test-forbidden test-perf \
-        test-all serve desktop openapi demo-agent bridge clean release smoke
+        test-all serve desktop openapi demo-agent bridge clean release smoke \
+        check-secrets
 
 help: ## Show this help
 	@awk 'BEGIN {FS = ":.*##"; printf "\nTargets:\n"} \
@@ -26,6 +27,9 @@ sync: ## Install Python 3.14 workspace with uv
 
 frontend: ## Install JS deps and build UI into pcl-server static/
 	cd $(FRONTEND) && $(NPM) ci && $(NPM) run build
+
+check-secrets: ## Fail if git-tracked paths match the secrets deny-list
+	$(UV) run python scripts/check_secrets.py
 
 lint: ## Lint Python with Ruff and frontend with ESLint
 	$(UV) run ruff check packages apps

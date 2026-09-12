@@ -3,6 +3,7 @@ name = "pcl-server"
 version = "0.2.0"
 description = "Local PCL service: FastAPI control plane and MCP server"
 requires-python = ">=3.14"
+license = "MIT"
 dependencies = [
         "pcl-core==0.2.0",
         "pcl-pca==0.2.0",

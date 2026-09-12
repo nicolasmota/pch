@@ -3,6 +3,7 @@ name = "pcl-sdk"
 version = "0.2.0"
 description = "Python SDK and demo agent for Personal Context Hub"
 requires-python = ">=3.14"
+license = "MIT"
 dependencies = [
     "pcl-core==0.2.0",
     "httpx>=0.28",

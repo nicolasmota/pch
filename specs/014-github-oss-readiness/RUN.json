@@ -1,0 +1,134 @@
+{
+  "schema_version": 1,
+  "feature_dir": "specs/014-github-oss-readiness",
+  "mode": "full",
+  "source": "desc",
+  "source_value": "Prepare the repository for public open-source on GitHub: add LICENSE, SECURITY.md, CONTRIBUTING.md, CODE_OF_CONDUCT.md as needed; scrub secrets risk and tighten .gitignore; improve README for first-time visitors and contributors; add community health files and GitHub issue/PR templates; ensure CI workflows and docs clearly explain local-first constraints, what not to commit (vault DBs, .env, oauth tokens, pairing tokens, .cursor/mcp.json), and how to build/test from source. Do not change product thesis or implement VISION/ROADMAP features \u2014 this is repo hygiene and public-readiness only.",
+  "current_stage": "implement",
+  "status": "running",
+  "stop_reason": null,
+  "refuse_reason": null,
+  "bar_path": "specs/014-github-oss-readiness/PLAN-BAR.md",
+  "bar_sha256": "f09df1408eb10f93f96881a713e5098fd8733075f4fe3c668381323f74b47080",
+  "gauntlet_round": 1,
+  "test_repair_round": 0,
+  "stages": {
+    "specify": {
+      "id": "specify",
+      "outcome": "pass",
+      "started_at": null,
+      "ended_at": "2026-09-12T00:14:51Z",
+      "evidence": null
+    },
+    "clarify": {
+      "id": "clarify",
+      "outcome": null,
+      "started_at": null,
+      "ended_at": null,
+      "evidence": null
+    },
+    "freeze_bar": {
+      "id": "freeze_bar",
+      "outcome": "pass",
+      "started_at": null,
+      "ended_at": "2026-09-12T00:15:23Z",
+      "evidence": null
+    },
+    "plan": {
+      "id": "plan",
+      "outcome": "pass",
+      "started_at": null,
+      "ended_at": "2026-09-12T00:18:58Z",
+      "evidence": null
+    },
+    "gauntlet": {
+      "id": "gauntlet",
+      "outcome": "pass",
+      "started_at": null,
+      "ended_at": "2026-09-12T00:21:01Z",
+      "evidence": {
+        "verdicts": [
+          {
+            "critic_id": "A",
+            "round": 1,
+            "verdict": "LOSE",
+            "failing_criteria": [
+              "3"
+            ]
+          },
+          {
+            "critic_id": "B",
+            "round": 1,
+            "verdict": "LOSE",
+            "failing_criteria": [
+              "3"
+            ]
+          },
+          {
+            "critic_id": "A",
+            "round": 2,
+            "verdict": "WIN",
+            "failing_criteria": []
+          },
+          {
+            "critic_id": "B",
+            "round": 2,
+            "verdict": "WIN",
+            "failing_criteria": []
+          }
+        ]
+      }
+    },
+    "tasks": {
+      "id": "tasks",
+      "outcome": "pass",
+      "started_at": null,
+      "ended_at": "2026-09-12T00:21:30Z",
+      "evidence": null
+    },
+    "analyze": {
+      "id": "analyze",
+      "outcome": "pass",
+      "started_at": null,
+      "ended_at": "2026-09-12T00:21:44Z",
+      "evidence": null
+    },
+    "implement": {
+      "id": "implement",
+      "outcome": null,
+      "started_at": null,
+      "ended_at": null,
+      "evidence": null
+    },
+    "test": {
+      "id": "test",
+      "outcome": null,
+      "started_at": null,
+      "ended_at": null,
+      "evidence": null
+    },
+    "delivery": {
+      "id": "delivery",
+      "outcome": null,
+      "started_at": null,
+      "ended_at": null,
+      "evidence": null
+    },
+    "converge": {
+      "id": "converge",
+      "outcome": null,
+      "started_at": null,
+      "ended_at": null,
+      "evidence": null
+    },
+    "complete": {
+      "id": "complete",
+      "outcome": null,
+      "started_at": null,
+      "ended_at": null,
+      "evidence": null
+    }
+  },
+  "unmet_items": [],
+  "updated_at": "2026-09-12T00:21:44Z"
+}

@@ -3,6 +3,7 @@ name = "pcl-core"
 version = "0.2.0"
 description = "Personal Context Layer trust kernel: vault, policy, memory, retrieval, audit"
 requires-python = ">=3.14"
+license = "MIT"
 dependencies = [
     "pydantic>=2.10",
     "sqlalchemy>=2.0",
