@@ -14,11 +14,14 @@ The empty `.hermes/skills/` directory in this repo is only a Speckit marker. Rea
 
 ## Repo map
 
-- `packages/pcl-core` — vault, schema, policy (no I/O)
+- `packages/pcl-core` — vault, schema, policy (no network I/O)
 - `packages/pcl-server` — loopback HTTP, plugin host, connectors
 - `packages/pcl-sdk` — CLI, MCP stdio bridge, plugin kit
+- `packages/pca` — Portable Context Archive export/import
+- `apps/hub-desktop` — `pch` / pywebview shell
 - `plugins/` — bundled import plugins (Calendar, Gmail, example RSS)
 - `frontend/` — React 19 UI, built into `pcl-server` static
+- `docs/` — product documentation (start at `docs/README.md`)
 - `docs/VISION.md` — shareable thesis (not a Speckit feature; do not implement this file)
 - `docs/ROADMAP.md` — operational epics E1–E6; spawn Speckit features from here
 - `docs/VISION-BAR.md` — frozen gauntlet bar for the vision essay

@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for helping with Personal Context Hub. This guide is for **from-source** work on the repository. End-user install is documented in the [README](README.md) (`uvx personal-context-hub`).
+Thanks for helping with Personal Context Hub. This guide is for **from-source** work on the repository. End-user install and product docs live in the [README](README.md) and [docs/](docs/README.md) (`uvx personal-context-hub`).
 
 ## Prerequisites
 
@@ -36,6 +36,10 @@ make help             # all targets
 - `.cursor/mcp.json`
 
 `make check-secrets` enforces this deny-list on tracked files.
+
+## Documentation
+
+When you change HTTP routes, MCP tools, CLI flags, schema, or security defaults, update the matching page under [docs/](docs/README.md) and regenerate OpenAPI with `make openapi` if the REST surface moved.
 
 ## Project constraints (read once)
 

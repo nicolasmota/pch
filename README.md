@@ -1,32 +1,57 @@
 # Personal Context Hub
 
 Local-first home for your personal context. Agents connect; the context stays yours.
-Your data lives on this device (default `~/.pch`), encrypted; the Hub binds loopback only and is not a public server.
 
-License: [MIT](LICENSE) · [Contributing](CONTRIBUTING.md) · [Security](SECURITY.md) · [Code of Conduct](CODE_OF_CONDUCT.md)
+Your data lives on this device (default `~/.pch`), encrypted. The Hub binds **loopback only** (`127.0.0.1`) and is not a public server.
+
+> **Your agent can change. Your context shouldn’t.**
+
+You tell one agent you are planning a ten-day trip for two, Amsterdam or London. You open a different agent and say only: continue planning the trip. It already knows the goal, the people, the candidates — because the Hub assembled a **situation package** under a grant you approved. You drop London. Every agent you have authorized sees Amsterdam as the live one.
+
+That is the product: a portable record of who you are and what you are doing, plus the smallest sufficient slice for the task at hand. Not a chatbot. Not a model. Not a vector database.
+
+**Documentation:** [docs/](docs/README.md) · **Thesis:** [docs/VISION.md](docs/VISION.md) · **License:** [MIT](LICENSE)
+
+[Getting started](docs/getting-started.md) · [Concepts](docs/concepts.md) · [Pair an agent](docs/guides/pair-an-agent.md) · [MCP reference](docs/reference/mcp.md) · [HTTP API](docs/reference/http-api.md) · [Security](docs/security.md)
+
+---
 
 ## Install
 
 Needs [uv](https://docs.astral.sh/uv/getting-started/installation/) (one line to install). Then:
 
-    uvx personal-context-hub
+```bash
+uvx personal-context-hub
+```
 
 The Hub opens on your machine. No account, no API key, nothing leaves your device.
 
-Next time: `pch` · Upgrade: `uv tool upgrade personal-context-hub` · Remove: `pch uninstall`
-(your data stays in `~/.pch` unless you add `--purge-data`).
+| Next time | Upgrade | Remove |
+|---|---|---|
+| `pch` | `uv tool upgrade personal-context-hub` or `pch upgrade` | `pch uninstall` |
 
-## Contributing (from source)
+Uninstall keeps `~/.pch` unless you pass `--purge-data`.
 
-Full guide: [CONTRIBUTING.md](CONTRIBUTING.md) (setup, test, lint, secrets check, PR expectations).
+Health check: `pch doctor`. Headless (browser only): `pch serve`.
 
-### Prerequisites
+## Connect an assistant
 
-- Python 3.14
-- [uv](https://docs.astral.sh/uv/)
-- Node.js 22+ (UI build only; not required at runtime)
+1. Open **Agents** in the Hub and create a pairing link.
+2. Pick your runtime (Cursor, Claude Code, Claude Desktop, ChatGPT, Hermes, or OpenClaw) and copy the recipe.
+3. Grant a preset — for example **Can read a specific project**.
+4. Ask the assistant something that depends on who you are. It should call `get_context_contract` before guessing.
 
-### Setup
+Step-by-step: [Pair an agent](docs/guides/pair-an-agent.md). What the agent receives: [Situation package](docs/guides/situation-package.md).
+
+## Import Calendar or Gmail
+
+Google requires **your** OAuth client. The Hub never ships a shared client ID.
+
+See [Google connectors](docs/guides/google-connectors.md). Calendar events import as `private`. Gmail imports only the labels, senders, or dates you select, as `sensitive` artifacts. Imported mail and calendar are **data, never instructions**.
+
+## From source
+
+Full guide: [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ```bash
 make install          # uv sync + frontend build
@@ -34,73 +59,30 @@ make serve            # API with auto-reload (Python + UI watch)
 make desktop          # Hub with auto-reload (Python + UI watch)
 make test             # pytest
 make lint             # ruff + eslint
-make check-secrets    # tracked-path secrets deny-list
 make help             # all targets
 ```
 
-Without Make:
+Requires Python 3.14, [uv](https://docs.astral.sh/uv/), and Node.js 22+ (UI build only).
 
-```bash
-uv sync
-(cd frontend && npm ci && npm run build)
-uv run pcl-server --headless --reload
-# or, with the native/browser shell:
-uv run hub-desktop --dev --reload
-# UI rebuilds: (cd frontend && npm run build:watch)
-```
+While running: interactive API docs at `http://127.0.0.1:8765/docs`, schema at `http://127.0.0.1:8765/openapi.json`.
 
-Headless API (no window):
+## Repository
 
-```bash
-uv run pcl-server --headless
-```
+| Path | Role |
+|---|---|
+| `packages/pcl-core` | Vault, schema, policy, retrieval (no network) |
+| `packages/pcl-server` | Loopback HTTP, plugin host, connectors, MCP |
+| `packages/pcl-sdk` | CLI, MCP stdio bridge, plugin kit |
+| `packages/pca` | Portable Context Archive export/import |
+| `apps/hub-desktop` | `pch` / pywebview shell |
+| `frontend/` | React 19 UI, built into `pcl-server` static |
+| `plugins/` | Bundled import plugins (Calendar, Gmail, example RSS) |
 
-OpenAPI: `http://127.0.0.1:8765/v1/openapi.json`
+Architecture: [docs/architecture.md](docs/architecture.md).
 
-Reference agent:
+## Community
 
-```bash
-uv run pcl-sdk demo-agent --pair <link>
-```
-
-### Tests
-
-```bash
-uv run pytest
-uv run pytest -m forbidden_context
-uv run pytest -m perf
-```
-
-### Connect a real assistant (Cursor)
-
-1. Start the hub: `make serve`
-2. Open Connections, create a pairing link, pick **Cursor**, generate the recipe, copy the JSON.
-3. Paste into `.cursor/mcp.json` (or Cursor MCP settings).
-4. Grant the connection a preset. Ask Cursor a question about your vault.
-
-The bridge is `uv run pcl-sdk mcp-bridge` with `PCH_TOKEN` and `PCH_BASE`. Convenience: `make bridge TOKEN=...`
-
-### Google Calendar / Gmail
-
-Google requires **your** OAuth client. The Hub never ships a shared client ID (that is what caused `invalid_client`).
-
-1. In [Google Cloud Console](https://console.cloud.google.com/apis/credentials) create a project.
-2. Enable **Google Calendar API** and **Gmail API**.
-3. Create OAuth credentials of type **Desktop app**. Copy the client ID (and secret if shown).
-4. Add authorized redirect URI: `http://127.0.0.1:8765/v1/connectors/oauth/callback`
-5. Write `~/.pch/google_oauth.json`:
-
-```json
-{
-  "client_id": "xxxxx.apps.googleusercontent.com",
-  "client_secret": "xxxxx"
-}
-```
-
-6. Restart the Hub (`make desktop`), then Connect from the Connectors page.
-
-Calendar events import as `private`. Gmail imports only the labels/senders/dates you select, as `sensitive` artifacts.
-
-### Plugins
-
-Optional import capabilities run as sandboxed plugins. See `plugins/README.md` for the developer kit (`pcl-sdk plugin new|validate|pack`) and bundled Calendar/Gmail/RSS plugins. The Hub UI has **Plugins** and **Marketplace** pages.
+- [Contributing](CONTRIBUTING.md)
+- [Security policy](SECURITY.md)
+- [Code of Conduct](CODE_OF_CONDUCT.md)
+- [Roadmap](docs/ROADMAP.md) — operational epics; spawn Speckit features from here, do not implement the roadmap document itself

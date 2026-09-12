@@ -9,6 +9,8 @@ Security fixes are accepted for:
 
 Older tags may not receive backports.
 
+Operator-facing security model (encryption, grants, plugins, loopback): [docs/security.md](docs/security.md).
+
 ## Reporting a vulnerability
 
 Please report Hub **software** vulnerabilities through GitHub **Private Vulnerability Reporting** / Security Advisories on this repository.

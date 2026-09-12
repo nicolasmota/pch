@@ -2,6 +2,8 @@
 
 Import-only extensions. Plugin code talks to the Hub through `pcl_sdk.plugin_runtime` (stdio JSON-RPC). It never sees the vault key or the open network.
 
+**Full guide:** [docs/guides/plugins.md](../docs/guides/plugins.md)
+
 ## Developer loop
 
 ```bash

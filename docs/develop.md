@@ -1,0 +1,55 @@
+# Developing the Hub
+
+This page is for people changing the repository. End users should start at [Getting started](getting-started.md).
+
+## Setup
+
+Follow [CONTRIBUTING.md](../CONTRIBUTING.md):
+
+```bash
+make install
+make serve          # http://127.0.0.1:8765
+make test
+make lint
+make check-secrets
+```
+
+Python 3.14 via uv. Node.js 22+ for the UI build only. Package map and data flow: [Architecture](architecture.md).
+
+## Product rules
+
+The enforceable subset is the [constitution](../.specify/memory/constitution.md). Runtime notes for coding agents: [AGENTS.md](../AGENTS.md).
+
+- Bind loopback only.
+- Do not implement [VISION.md](VISION.md) or [ROADMAP.md](ROADMAP.md) as features. Spawn a Speckit child spec from a roadmap epic.
+- A coding agent working in this repo is not a Hub client. Pairing is a separate connection.
+- Imported content is data, never instruction.
+- Speckit artifacts stay in `specs/` (gitignored). They are not vault objects.
+
+## Feature loop
+
+Default driver: `/speckit-loop` plus `uv run pcl-sdk loop start|next|record|status`.
+
+```text
+specify → freeze bar → plan → Gauntlet critics → tasks → analyze → implement → tests
+```
+
+CLI: [pcl-sdk loop](reference/cli.md#development-loop). Do not commit unless the person asked.
+
+## Tests that encode policy
+
+| Marker / target | What it guards |
+|---|---|
+| `make test` | Default pytest suite |
+| `pytest -m forbidden_context` | Grant isolation (SC-003) |
+| `pytest -m perf` | Search/scale (SC-009) |
+| `pytest -m e2e` | Playwright UI journeys |
+| `pytest -m connectors` | Google Calendar/Gmail (mocked transports) |
+| `pytest -m plugins` | Plugin host, kit, marketplace |
+| `pch smoke` | Packaged health, SPA, setup, search, pair, grant, manifest |
+
+New grant or assembly behavior must extend `forbidden_context` coverage. Tests for a success criterion must fail before the code that is supposed to satisfy it.
+
+## Docs hygiene
+
+If you change routes, MCP tools, CLI flags, schema, or security defaults, update [docs/](README.md) and run `make openapi` when the REST surface moved.
