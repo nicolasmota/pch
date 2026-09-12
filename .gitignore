@@ -46,3 +46,6 @@ Thumbs.db
 .idea/
 .vscode/
 .cursor/mcp.json
+
+# Speckit feature packs (local process artifacts; not published)
+specs/

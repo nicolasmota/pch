@@ -60,10 +60,11 @@ desktop: ## Hub with auto-reload (Python + UI watch)
 	(cd $(FRONTEND) && $(NPM) run build:watch) & \
 	$(UV) run hub-desktop --dev --reload --port $(PORT) --data-dir $(DATA_DIR)
 
-openapi: ## Dump OpenAPI 3.1 JSON to specs/.../contracts/openapi.json
+openapi: ## Dump OpenAPI 3.1 JSON to docs/openapi.json
 	$(UV) run python -c "from pathlib import Path; from pcl_core.service import Hub; from pcl_server.rest.app import create_app; import json, tempfile; \
 hub = Hub(Path(tempfile.mkdtemp()), plain=True); \
-Path('specs/001-personal-context-hub/contracts/openapi.json').write_text(json.dumps(create_app(hub).openapi(), indent=2))"
+Path('docs').mkdir(exist_ok=True); \
+Path('docs/openapi.json').write_text(json.dumps(create_app(hub).openapi(), indent=2))"
 
 demo-agent: ## Pair the reference agent (CODE= from Hub pairing link)
 	@test -n "$(CODE)" || (echo "usage: make demo-agent CODE=<pairing-code>"; exit 1)

@@ -71,8 +71,6 @@ uv run pytest -m forbidden_context
 uv run pytest -m perf
 ```
 
-See `specs/001-personal-context-hub/quickstart.md` for the six validation scenarios.
-
 ### Connect a real assistant (Cursor)
 
 1. Start the hub: `make serve`
