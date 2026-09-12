@@ -3,13 +3,13 @@ from __future__ import annotations
 from pathlib import Path
 
 from fastapi import APIRouter, Depends
-from pydantic import BaseModel
-
 from pcl_core.errors import PclError
 from pcl_core.ids import new_id
 from pcl_core.schema.audit import EventKind
 from pcl_core.service import Hub
 from pcl_core.timeutil import now_iso
+from pydantic import BaseModel
+
 from pcl_server.rest.auth import get_hub, require_owner
 
 router = APIRouter(tags=["portability"])
