@@ -1,0 +1,21 @@
+[project]
+name = "pch-core"
+version = "0.2.0"
+description = "Personal Context Hub trust kernel: vault, policy, memory, retrieval, audit"
+requires-python = ">=3.12"
+license = "MIT"
+dependencies = [
+    "pydantic>=2.10",
+    "sqlcipher3>=0.6.2",
+    "cryptography>=44.0",
+    "keyring>=25.0",
+    "python-ulid>=2.2",
+    "argon2-cffi>=23.1",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/pch_core"]

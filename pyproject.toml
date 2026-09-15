@@ -1,0 +1,89 @@
+[project]
+name = "pch-workspace"
+version = "0.2.0"
+description = "Personal Context Hub — local-first personal context for any agent"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "pch-core",
+    "pch-server",
+    "pch-archive",
+    "pch-sdk",
+    "pch-lab",
+    "personal-context-hub",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3",
+    "pytest-asyncio>=0.24",
+    "httpx>=0.28",
+    "schemathesis>=3.39",
+    "playwright>=1.49",
+    "ruff>=0.9",
+    "mypy>=1.14",
+]
+
+[tool.uv]
+package = false
+
+[tool.uv.workspace]
+members = [
+    "packages/pch-core",
+    "packages/pch-server",
+    "packages/pch-archive",
+    "packages/pch-sdk",
+    "packages/pch-lab",
+    "apps/hub-desktop",
+]
+
+[tool.uv.sources]
+pch-core = { workspace = true }
+pch-server = { workspace = true }
+pch-archive = { workspace = true }
+pch-sdk = { workspace = true }
+pch-lab = { workspace = true }
+personal-context-hub = { workspace = true }
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+pythonpath = [
+    "packages/pch-core/src",
+    "packages/pch-server/src",
+    "packages/pch-archive/src",
+    "packages/pch-sdk/src",
+    "packages/pch-lab/src",
+    "apps/hub-desktop/src",
+]
+markers = [
+    "forbidden_context: seeded policy isolation tests (SC-003)",
+    "perf: scale/performance checks (SC-009)",
+    "e2e: Playwright UI journeys",
+    "connectors: Google Calendar/Gmail connector tests (mocked transports)",
+    "plugins: plugin host, kit, and marketplace tests",
+    "release: packaged wheel install (slow; needs network)",
+]
+testpaths = [
+    "packages/pch-core/tests",
+    "packages/pch-server/tests",
+    "packages/pch-archive/tests",
+    "packages/pch-sdk/tests",
+    "packages/pch-lab/tests",
+    "apps/hub-desktop/tests",
+]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+packages = ["pch_core", "pch_server", "pch_archive", "pch_sdk", "pch_lab", "hub_desktop"]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "pytest-asyncio>=0.24",
+    "httpx>=0.28",
+    "schemathesis>=3.39",
+    "playwright>=1.49",
+    "ruff>=0.9",
+    "mypy>=1.14",
+]

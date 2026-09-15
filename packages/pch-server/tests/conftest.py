@@ -1,0 +1,17 @@
+from pathlib import Path
+
+import pytest
+from fastapi.testclient import TestClient
+from pch_core.service import Hub
+from pch_server.rest.app import create_app
+
+
+@pytest.fixture
+def client(tmp_path: Path):
+    hub = Hub(tmp_path, plain=True)
+    app = create_app(hub)
+    c = TestClient(app)
+    boot = c.get("/v1/bootstrap").json()
+    c.headers["Authorization"] = f"Bearer {boot['owner_token']}"
+    c.post("/v1/setup", json={"name": "Tester"})
+    return c

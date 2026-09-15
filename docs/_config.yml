@@ -1,0 +1,31 @@
+title: Personal Context Hub
+description: >-
+  Local-first personal context for any agent. Encrypted vault on-device,
+  MCP pairing, loopback only.
+url: https://nicolasmota.github.io
+baseurl: /personal-context-hub
+theme: jekyll-theme-cayman
+plugins:
+  - jekyll-sitemap
+  - jekyll-relative-links
+relative_links:
+  enabled: true
+  collections: true
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: default
+include:
+  - llms.txt
+  - llms-full.txt
+  - robots.txt
+exclude:
+  - VISION.md
+  - VISION-BAR.md
+  - ROADMAP.md
+  - assets/social-preview.html
+markdown: kramdown
+kramdown:
+  input: GFM
+  hard_wrap: false

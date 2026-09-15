@@ -1,0 +1,130 @@
+"""User SDK vs lab package (019). Fails while eval/loop live on pch-sdk."""
+
+from __future__ import annotations
+
+import subprocess
+import sys
+import tomllib
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[4]
+CONSTITUTION = ROOT / ".specify" / "memory" / "constitution.md"
+
+
+def test_sdk_help_is_user_surface() -> None:
+    result = subprocess.run(
+        [sys.executable, "-m", "pch_sdk", "--help"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    out = result.stdout.lower()
+    assert "mcp-bridge" in out
+    assert "plugin" in out
+    assert "demo-agent" in out
+    assert "eval" not in out
+    assert "loop" not in out
+    assert " sim" not in out and "\nsim" not in out
+
+
+def test_importing_sdk_main_does_not_load_lab() -> None:
+    code = (
+        "import sys, pch_sdk.__main__ as m; "
+        "names = set(sys.modules); "
+        "assert 'pch_lab' not in names, sorted(n for n in names if 'pch_lab' in n or 'devloop' in n); "
+        "assert 'pch_sdk.devloop' not in names; "
+        "assert 'pch_sdk.eval' not in names; "
+        "assert 'pch_sdk.sim' not in names"
+    )
+    result = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, check=False)
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_lab_package_and_script() -> None:
+    path = ROOT / "packages" / "pch-lab" / "pyproject.toml"
+    data = tomllib.loads(path.read_text(encoding="utf-8"))
+    assert data["project"]["name"] == "pch-lab"
+    assert data["project"]["scripts"]["pch-lab"]
+    import pch_lab.devloop.cli as lab_cli
+
+    assert callable(lab_cli.dispatch_loop)
+
+
+def test_lab_loop_help() -> None:
+    result = subprocess.run(
+        [sys.executable, "-m", "pch_lab", "loop", "--help"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    assert "start" in result.stdout.lower()
+
+
+def test_docs_and_constitution_name_lab() -> None:
+    if CONSTITUTION.is_file():
+        constitution = CONSTITUTION.read_text(encoding="utf-8")
+        assert "`packages/pch-lab`" in constitution
+        assert "**Version**: 1.3.1" in constitution
+        sdk_bullet = [line for line in constitution.splitlines() if "`packages/pch-sdk`" in line]
+        assert sdk_bullet
+        assert "evaluation harness" not in " ".join(sdk_bullet).lower()
+    agents = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
+    assert "pch-lab loop" in agents
+    assert "uv run pch-sdk loop" not in agents
+    develop = (ROOT / "docs" / "develop.md").read_text(encoding="utf-8")
+    assert "pch-lab loop" in develop
+    cli = (ROOT / "docs" / "reference" / "cli.md").read_text(encoding="utf-8")
+    assert "pch-lab loop" in cli
+    assert "uv run pch-sdk eval" not in cli
+    assert "does not run loop" in cli
+
+
+def test_server_package_does_not_depend_on_lab() -> None:
+    data = tomllib.loads((ROOT / "packages" / "pch-server" / "pyproject.toml").read_text(encoding="utf-8"))
+    deps = " ".join(data["project"]["dependencies"])
+    assert "pch-lab" not in deps
+    assert "pch_lab" not in deps
+
+
+def test_importing_server_app_does_not_load_lab() -> None:
+    code = (
+        "import sys; "
+        "from pch_server.rest.app import create_app; "
+        "from pathlib import Path; "
+        "from pch_core.service import Hub; "
+        "from tempfile import TemporaryDirectory; "
+        "td = TemporaryDirectory(); "
+        "hub = Hub(Path(td.name), plain=True); "
+        "create_app(hub, sim_enabled=False, catalog_refresh=False); "
+        "names = set(sys.modules); "
+        "assert 'pch_lab' not in names, sorted(n for n in names if n.startswith('pch_lab')); "
+        "hub.close(); td.cleanup()"
+    )
+    result = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, check=False)
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_sdk_lab_verbs_do_not_load_lab() -> None:
+    help_run = subprocess.run(
+        [sys.executable, "-m", "pch_sdk", "loop", "status"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert help_run.returncode == 2
+    assert "pch-lab" in help_run.stderr
+    code = """
+import sys
+from pch_sdk.__main__ import main
+try:
+    main(['eval', 'run'])
+except SystemExit as exc:
+    assert exc.code == 2
+else:
+    raise AssertionError('expected SystemExit')
+assert 'pch_lab' not in sys.modules
+"""
+    result = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, check=False)
+    assert result.returncode == 0, result.stdout + result.stderr

@@ -1,0 +1,428 @@
+{
+  "$defs": {
+    "Citation": {
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "role": {
+          "default": "self",
+          "title": "Role",
+          "type": "string"
+        },
+        "version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Version"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "title": "Citation",
+      "type": "object"
+    },
+    "ConflictPair": {
+      "properties": {
+        "item_ids": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 2,
+          "title": "Item Ids",
+          "type": "array"
+        },
+        "reason": {
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "item_ids",
+        "reason"
+      ],
+      "title": "ConflictPair",
+      "type": "object"
+    },
+    "ContractItem": {
+      "properties": {
+        "ref": {
+          "$ref": "#/$defs/ItemRef"
+        },
+        "body": {
+          "additionalProperties": true,
+          "title": "Body",
+          "type": "object"
+        },
+        "citation": {
+          "items": {
+            "$ref": "#/$defs/Citation"
+          },
+          "minItems": 1,
+          "title": "Citation",
+          "type": "array"
+        },
+        "authority": {
+          "title": "Authority",
+          "type": "string"
+        },
+        "confidence": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Confidence"
+        },
+        "freshness": {
+          "format": "date-time",
+          "title": "Freshness",
+          "type": "string"
+        },
+        "untrusted": {
+          "default": false,
+          "title": "Untrusted",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "ref",
+        "body",
+        "citation",
+        "authority",
+        "freshness"
+      ],
+      "title": "ContractItem",
+      "type": "object"
+    },
+    "ItemRef": {
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "type": {
+          "title": "Type",
+          "type": "string"
+        },
+        "summary": {
+          "title": "Summary",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "summary"
+      ],
+      "title": "ItemRef",
+      "type": "object"
+    },
+    "OmissionCategory": {
+      "enum": [
+        "scope_not_granted",
+        "classification_ceiling",
+        "capability_missing",
+        "policy_exclusion",
+        "not_relevant",
+        "over_cap"
+      ],
+      "title": "OmissionCategory",
+      "type": "string"
+    },
+    "OmissionNote": {
+      "additionalProperties": false,
+      "properties": {
+        "category": {
+          "$ref": "#/$defs/OmissionCategory"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        },
+        "count": {
+          "minimum": 1,
+          "title": "Count",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "category",
+        "label",
+        "count"
+      ],
+      "title": "OmissionNote",
+      "type": "object"
+    },
+    "RelationRef": {
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "relation_type": {
+          "title": "Relation Type",
+          "type": "string"
+        },
+        "from": {
+          "$ref": "#/$defs/ItemRef"
+        },
+        "to": {
+          "$ref": "#/$defs/ItemRef"
+        }
+      },
+      "required": [
+        "id",
+        "relation_type",
+        "from",
+        "to"
+      ],
+      "title": "RelationRef",
+      "type": "object"
+    },
+    "ScopeSummary": {
+      "properties": {
+        "grant_id": {
+          "title": "Grant Id",
+          "type": "string"
+        },
+        "selectors": {
+          "additionalProperties": true,
+          "title": "Selectors",
+          "type": "object"
+        },
+        "classification_ceiling": {
+          "title": "Classification Ceiling",
+          "type": "string"
+        },
+        "capabilities": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Capabilities",
+          "type": "array"
+        },
+        "summary_human": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Summary Human"
+        }
+      },
+      "required": [
+        "grant_id",
+        "classification_ceiling",
+        "summary_human"
+      ],
+      "title": "ScopeSummary",
+      "type": "object"
+    },
+    "SituationRef": {
+      "properties": {
+        "project_id": {
+          "title": "Project Id",
+          "type": "string"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "status": {
+          "title": "Status",
+          "type": "string"
+        },
+        "operational_phase": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Operational Phase"
+        },
+        "current_step": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Current Step"
+        },
+        "situation_intent": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Situation Intent"
+        }
+      },
+      "required": [
+        "project_id",
+        "title",
+        "status"
+      ],
+      "title": "SituationRef",
+      "type": "object"
+    }
+  },
+  "properties": {
+    "contract_id": {
+      "title": "Contract Id",
+      "type": "string"
+    },
+    "purpose": {
+      "title": "Purpose",
+      "type": "string"
+    },
+    "situation": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/SituationRef"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "candidates": {
+      "items": {
+        "$ref": "#/$defs/SituationRef"
+      },
+      "title": "Candidates",
+      "type": "array"
+    },
+    "goals": {
+      "items": {
+        "$ref": "#/$defs/ContractItem"
+      },
+      "title": "Goals",
+      "type": "array"
+    },
+    "preferences": {
+      "items": {
+        "$ref": "#/$defs/ContractItem"
+      },
+      "title": "Preferences",
+      "type": "array"
+    },
+    "memories": {
+      "items": {
+        "$ref": "#/$defs/ContractItem"
+      },
+      "title": "Memories",
+      "type": "array"
+    },
+    "decisions": {
+      "items": {
+        "$ref": "#/$defs/ContractItem"
+      },
+      "title": "Decisions",
+      "type": "array"
+    },
+    "constraints": {
+      "items": {
+        "$ref": "#/$defs/ContractItem"
+      },
+      "title": "Constraints",
+      "type": "array"
+    },
+    "state": {
+      "items": {
+        "$ref": "#/$defs/ContractItem"
+      },
+      "title": "State",
+      "type": "array"
+    },
+    "relations": {
+      "items": {
+        "$ref": "#/$defs/RelationRef"
+      },
+      "title": "Relations",
+      "type": "array"
+    },
+    "references": {
+      "items": {
+        "$ref": "#/$defs/ItemRef"
+      },
+      "title": "References",
+      "type": "array"
+    },
+    "conflicts": {
+      "items": {
+        "$ref": "#/$defs/ConflictPair"
+      },
+      "title": "Conflicts",
+      "type": "array"
+    },
+    "granted_scope": {
+      "$ref": "#/$defs/ScopeSummary"
+    },
+    "omissions": {
+      "items": {
+        "$ref": "#/$defs/OmissionNote"
+      },
+      "title": "Omissions",
+      "type": "array"
+    },
+    "capture_hints": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Capture Hints",
+      "type": "array"
+    },
+    "assembled_at": {
+      "format": "date-time",
+      "title": "Assembled At",
+      "type": "string"
+    },
+    "sufficient": {
+      "default": false,
+      "title": "Sufficient",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "contract_id",
+    "purpose",
+    "situation",
+    "granted_scope",
+    "assembled_at",
+    "omissions",
+    "sufficient"
+  ],
+  "title": "Situation package envelope",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/nicolasmota/pch/docs/reference/context-contract.schema.json"
+}

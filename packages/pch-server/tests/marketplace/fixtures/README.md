@@ -1,0 +1,1 @@
+Local catalog fixture used by marketplace tests. Tests generate an Ed25519 key at runtime and sign `catalog.json` in-memory. This directory exists so the suite has a stable home for recorded packages if needed.

@@ -1,0 +1,57 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+dist/
+build/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg
+.coverage
+htmlcov/
+
+# Node / frontend
+node_modules/
+frontend/dist/
+*.tsbuildinfo
+packages/pch-server/src/pch_server/static/
+
+# Vault / secrets
+*.db
+*.db-wal
+*.db-shm
+*.pca
+.vault/
+.pch/
+.pch-sim/
+*.key
+.env
+.env.*
+google_oauth.json
+pairing_token*
+*pairing*token*
+
+# Packaging
+*.spec.bak
+apps/hub-desktop/dist/
+
+# OS / editors
+.DS_Store
+Thumbs.db
+*.tmp
+*.swp
+.idea/
+.vscode/
+.cursor/mcp.json
+
+# Speckit (local process artifacts; not published)
+specs/
+.specify/
+
+# Local thesis / sequencing (kept on this machine; not published)
+docs/VISION.md
+docs/VISION-BAR.md
+docs/ROADMAP.md

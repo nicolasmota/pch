@@ -1,0 +1,49 @@
+name: Bug report
+description: Report a defect in the Hub software
+title: "[bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for filing a bug.
+
+        **Do not paste** vault exports, `.env` files, OAuth client files (`google_oauth.json`), pairing tokens, or `.cursor/mcp.json`.
+  - type: checkboxes
+    id: no-secrets
+    attributes:
+      label: Secrets confirmation
+      options:
+        - label: I have not pasted vault data, tokens, or OAuth client files (including pairing tokens and `.cursor/mcp.json`).
+          required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Expected vs actual behavior.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: Minimal steps. Redact personal context.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version / commit
+      description: Release tag or git SHA if known.
+    validations:
+      required: false
+  - type: dropdown
+    id: install
+    attributes:
+      label: How did you install?
+      options:
+        - From source (make install)
+        - Packaged / uvx (only if a release exists)
+        - Other
+    validations:
+      required: false

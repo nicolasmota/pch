@@ -1,0 +1,38 @@
+[project]
+name = "pch-server"
+version = "0.2.0"
+description = "Local Personal Context Hub service: FastAPI control plane and MCP server"
+requires-python = ">=3.12"
+license = "MIT"
+dependencies = [
+    "pch-core==0.2.0",
+    "pch-archive==0.2.0",
+    "pch-sdk==0.2.0",
+    "fastapi>=0.115",
+    "uvicorn>=0.34",
+    "watchfiles>=1.0",
+    "mcp>=1.9",
+    "python-multipart>=0.0.18",
+    "httpx>=0.28",
+    "google-auth>=2.36",
+    "google-auth-oauthlib>=1.2",
+]
+
+[project.scripts]
+pch-server = "pch_server.__main__:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build]
+ignore-vcs = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/pch_server"]
+artifacts = ["src/pch_server/static/**"]
+
+[tool.uv.sources]
+pch-core = { workspace = true }
+pch-archive = { workspace = true }
+pch-sdk = { workspace = true }
