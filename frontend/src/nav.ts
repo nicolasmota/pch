@@ -1,58 +1,34 @@
 export type NavItem = { to: string; label: string; end?: boolean };
-export type NavGroup = { heading: string; items: NavItem[] };
+export type NavGroup = {
+  heading: string;
+  items: NavItem[];
+  collapsible?: boolean;
+};
 
-export const NAV_GROUPS: NavGroup[] = [
-  {
-    heading: "Start",
-    items: [
-      { to: "/", label: "Home", end: true },
-      { to: "/sim", label: "Simulator" },
-    ],
-  },
-  {
-    heading: "Content",
-    items: [
-      { to: "/projects", label: "Projects" },
-      { to: "/memories", label: "Memories" },
-      { to: "/search", label: "Search" },
-    ],
-  },
-  {
-    heading: "Governance",
-    items: [
-      { to: "/review", label: "Review" },
-      { to: "/conflicts", label: "Conflicts" },
-      { to: "/approvals", label: "Approvals" },
-      { to: "/access", label: "Access" },
-      { to: "/audit", label: "Audit" },
-    ],
-  },
-  {
-    heading: "Connections",
-    items: [
-      { to: "/connections", label: "Agents" },
-      { to: "/plugins", label: "Plugins" },
-      { to: "/marketplace", label: "Marketplace" },
-      { to: "/connectors", label: "Connectors" },
-    ],
-  },
-  {
-    heading: "Data",
-    items: [
-      { to: "/handoff", label: "Handoff" },
-      { to: "/export", label: "Export" },
-      { to: "/import", label: "Import" },
-    ],
-  },
+export const PRIMARY_NAV: NavItem[] = [
+  { to: "/", label: "Home", end: true },
+  { to: "/connections", label: "Agents" },
+  { to: "/review", label: "Review" },
+];
+
+export const ADVANCED_NAV: NavItem[] = [
+  { to: "/search", label: "Search" },
+  { to: "/projects", label: "Projects" },
+  { to: "/memories", label: "Memories" },
+  { to: "/plugins", label: "Plugins" },
+  { to: "/connectors", label: "Connectors" },
+  { to: "/export", label: "Export" },
+  { to: "/import", label: "Import" },
+  { to: "/audit", label: "Audit" },
 ];
 
 export function visibleNavGroups(simEnabled: boolean): NavGroup[] {
-  return NAV_GROUPS.map((group) => ({
-    ...group,
-    items: group.items.filter((item) => {
-      if (item.to === "/sim") return simEnabled;
-      if (item.to === "/marketplace") return false;
-      return true;
-    }),
-  })).filter((group) => group.items.length > 0);
+  const advanced = [...ADVANCED_NAV];
+  if (simEnabled) {
+    advanced.unshift({ to: "/sim", label: "Simulator" });
+  }
+  return [
+    { heading: "Hub", items: PRIMARY_NAV },
+    { heading: "Advanced", items: advanced, collapsible: true },
+  ];
 }

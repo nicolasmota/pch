@@ -10,7 +10,11 @@ import PageHeader from "../components/PageHeader";
 import Spinner from "../components/Spinner";
 import { useApi } from "../hooks/useApi";
 
-export default function Approvals() {
+type Props = {
+  embedded?: boolean;
+};
+
+export default function Approvals({ embedded = false }: Props) {
   const { data, loading, error, reload } = useApi<Approval[]>(() =>
     api("/v1/approvals?status=pending"),
   );
@@ -37,13 +41,8 @@ export default function Approvals() {
 
   const items = data ?? [];
 
-  return (
-    <section className="space-y-6">
-      <PageHeader title="Approvals" description="Decide on actions agents want to take." />
-      {error ? <Alert tone="error">{error}</Alert> : null}
-      {actionError ? <Alert tone="error">{actionError}</Alert> : null}
-      {loading ? <Spinner /> : null}
-      {!loading && items.length === 0 ? <EmptyState message="No pending approvals." /> : null}
+  const queue = (
+    <>
       {items.map((a) => (
         <Card key={a.id} className="space-y-2">
           <p className="text-sm text-ink">
@@ -78,6 +77,31 @@ export default function Approvals() {
         }}
         onCancel={() => setDeclineId(null)}
       />
+    </>
+  );
+
+  if (embedded) {
+    if (loading || items.length === 0) {
+      return null;
+    }
+    return (
+      <div className="space-y-3">
+        <h2 className="text-sm font-medium text-ink">Approvals</h2>
+        {error ? <Alert tone="error">{error}</Alert> : null}
+        {actionError ? <Alert tone="error">{actionError}</Alert> : null}
+        {queue}
+      </div>
+    );
+  }
+
+  return (
+    <section className="space-y-6">
+      <PageHeader title="Approvals" description="Decide on actions agents want to take." />
+      {error ? <Alert tone="error">{error}</Alert> : null}
+      {actionError ? <Alert tone="error">{actionError}</Alert> : null}
+      {loading ? <Spinner /> : null}
+      {!loading && items.length === 0 ? <EmptyState message="No pending approvals." /> : null}
+      {queue}
     </section>
   );
 }

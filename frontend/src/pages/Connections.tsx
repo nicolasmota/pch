@@ -4,13 +4,16 @@ import type {
   AgentConnection,
   AssistantCatalogEntry,
   AssistantRecipe,
+  Grant,
   GrantPreset,
   PairingLink,
 } from "../api/types";
 import Alert from "../components/Alert";
+import Badge from "../components/Badge";
 import Button from "../components/Button";
 import Card from "../components/Card";
 import ConfirmDialog from "../components/ConfirmDialog";
+import DataList from "../components/DataList";
 import Field from "../components/Field";
 import Input from "../components/Input";
 import PageHeader from "../components/PageHeader";
@@ -127,6 +130,7 @@ export default function Connections() {
   const [assistant, setAssistant] = useState("cursor");
   const [recipe, setRecipe] = useState<AssistantRecipe | null>(null);
   const [knownConnections, setKnownConnections] = useState<AgentConnection[]>([]);
+  const [grants, setGrants] = useState<Grant[]>([]);
 
   useEffect(() => {
     api<AssistantCatalogEntry[]>("/v1/catalog/assistants")
@@ -143,6 +147,9 @@ export default function Connections() {
         });
       })
       .catch(() => setKnownConnections([]));
+    api<Grant[]>("/v1/grants")
+      .then(setGrants)
+      .catch(() => setGrants([]));
   }, []);
 
   async function mint() {
@@ -183,6 +190,8 @@ export default function Connections() {
         }),
       });
       setMsg("Grant confirmed.");
+      const rows = await api<Grant[]>("/v1/grants");
+      setGrants(rows);
     } catch (err) {
       setError(errorMessage(err));
     } finally {
@@ -245,8 +254,8 @@ export default function Connections() {
   return (
     <section className="space-y-6">
       <PageHeader
-        title="Connections"
-        description="Connect an agent from a catalog entry or a one-time link. No developer configuration."
+        title="Agents"
+        description="Pair an assistant, grant what it may read, and copy the recipe."
       />
       {error ? <Alert tone="error">{error}</Alert> : null}
       {msg ? <Alert tone="success">{msg}</Alert> : null}
@@ -354,6 +363,20 @@ export default function Connections() {
             </pre>
           </div>
         ) : null}
+      </Card>
+      <Card className="space-y-4">
+        <h2 className="text-lg font-semibold text-ink">Grants</h2>
+        <DataList
+          items={grants}
+          keyOf={(g) => g.id}
+          empty="No grants yet."
+          render={(g) => (
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <p className="text-ink">{g.summary_human}</p>
+              <Badge tone={g.status === "active" ? "success" : "neutral"}>{g.status}</Badge>
+            </div>
+          )}
+        />
       </Card>
       <ConfirmDialog
         open={confirmRevoke}

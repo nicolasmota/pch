@@ -11,6 +11,16 @@ test("marketplace and simulator are off the default nav", async ({ page }) => {
   await page.goto("/");
   const nav = page.getByRole("navigation", { name: "Main" });
   await expect(nav.getByRole("link", { name: "Home" })).toBeVisible();
+  await expect(nav.getByRole("link", { name: "Agents" })).toBeVisible();
+  await expect(nav.getByRole("link", { name: "Review" })).toBeVisible();
+  await expect(nav.getByRole("button", { name: "Advanced" })).toBeVisible();
   await expect(nav.getByRole("link", { name: "Marketplace" })).toHaveCount(0);
   await expect(nav.getByRole("link", { name: "Simulator" })).toHaveCount(0);
+  await expect(nav.getByRole("link", { name: "Access" })).toHaveCount(0);
+  await expect(nav.getByRole("link", { name: "Handoff" })).toHaveCount(0);
+  await expect(nav.getByRole("link", { name: "Conflicts" })).toHaveCount(0);
+  await expect(nav.getByRole("link", { name: "Approvals" })).toHaveCount(0);
+  await expect(nav.getByRole("link", { name: "Projects" })).toHaveCount(0);
+  await nav.getByRole("button", { name: "Advanced" }).click();
+  await expect(nav.getByRole("link", { name: "Projects" })).toBeVisible();
 });

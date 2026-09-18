@@ -9,7 +9,11 @@ import PageHeader from "../components/PageHeader";
 import Spinner from "../components/Spinner";
 import { useApi } from "../hooks/useApi";
 
-export default function Conflicts() {
+type Props = {
+  embedded?: boolean;
+};
+
+export default function Conflicts({ embedded = false }: Props) {
   const { data, loading, error, reload } = useApi<Conflict[]>(() => api("/v1/conflicts"));
   const [actionError, setActionError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -30,38 +34,56 @@ export default function Conflicts() {
     }
   }
 
+  const items = data ?? [];
+
+  function list(empty: string) {
+    return (
+      <DataList
+        items={items}
+        keyOf={(c) => c.id}
+        empty={empty}
+        render={(c) => (
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <div className="flex items-center gap-2">
+                <Badge tone="warning">{c.kind}</Badge>
+                <Badge>{c.status}</Badge>
+              </div>
+              <p className="mt-1 text-ink">{c.detail}</p>
+            </div>
+            <Button
+              variant="secondary"
+              onClick={() => keepExisting(c.id)}
+              disabled={busyId === c.id}
+            >
+              Keep existing
+            </Button>
+          </div>
+        )}
+      />
+    );
+  }
+
+  if (embedded) {
+    if (loading || items.length === 0) {
+      return null;
+    }
+    return (
+      <div className="space-y-3">
+        <h2 className="text-sm font-medium text-ink">Conflicts</h2>
+        {error ? <Alert tone="error">{error}</Alert> : null}
+        {actionError ? <Alert tone="error">{actionError}</Alert> : null}
+        {list("No open conflicts.")}
+      </div>
+    );
+  }
+
   return (
     <section className="space-y-6">
       <PageHeader title="Conflicts" description="Resolve overlapping or contradictory memories." />
       {error ? <Alert tone="error">{error}</Alert> : null}
       {actionError ? <Alert tone="error">{actionError}</Alert> : null}
-      {loading ? (
-        <Spinner />
-      ) : (
-        <DataList
-          items={data ?? []}
-          keyOf={(c) => c.id}
-          empty="No open conflicts."
-          render={(c) => (
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <div className="flex items-center gap-2">
-                  <Badge tone="warning">{c.kind}</Badge>
-                  <Badge>{c.status}</Badge>
-                </div>
-                <p className="mt-1 text-ink">{c.detail}</p>
-              </div>
-              <Button
-                variant="secondary"
-                onClick={() => keepExisting(c.id)}
-                disabled={busyId === c.id}
-              >
-                Keep existing
-              </Button>
-            </div>
-          )}
-        />
-      )}
+      {loading ? <Spinner /> : list("No open conflicts.")}
     </section>
   );
 }

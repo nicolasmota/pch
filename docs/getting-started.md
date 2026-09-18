@@ -157,5 +157,5 @@ pch uninstall --purge-data # also delete the vault
 ## Next
 
 - [Concepts](concepts.md) — memory, context, situation, grants
-- [The Hub UI](guides/the-hub-ui.md) — every page
+- [The Hub UI](guides/the-hub-ui.md) — Home, Agents, Review; Advanced for the rest
 - [Security](security.md) — encryption, least privilege, reporting

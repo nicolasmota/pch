@@ -25,7 +25,7 @@ Pasting into a single project’s `.cursor/mcp.json` works but is optional. Pref
 4. Either:
    - Pair from the runtime with the one-time code, or
    - Generate a **recipe** for that assistant and copy the JSON/YAML snippet.
-5. Open **Access** (or stay on Agents) and attach a grant:
+5. On **Agents**, attach a grant:
    - `read_project` + the project you care about, or
    - `read_active_projects` for a broader read, and/or
    - `always_ask_before_sending` if the agent might propose outward actions.

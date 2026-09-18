@@ -19,7 +19,7 @@ Docs: https://nicolasmota.github.io/personal-context-hub/
 - [Google connectors](https://nicolasmota.github.io/personal-context-hub/guides/google-connectors.html): your OAuth client; Calendar `private`; Gmail `sensitive`
 - [Plugins](https://nicolasmota.github.io/personal-context-hub/guides/plugins.html): import-only plugins, marketplace, authoring
 - [Export and import](https://nicolasmota.github.io/personal-context-hub/guides/export-import.html): Portable Context Archive
-- [The Hub UI](https://nicolasmota.github.io/personal-context-hub/guides/the-hub-ui.html): routes and pages
+- [The Hub UI](https://nicolasmota.github.io/personal-context-hub/guides/the-hub-ui.html): Home, Agents, Review; Advanced for the rest
 
 ## Reference
 

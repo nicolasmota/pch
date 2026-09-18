@@ -51,6 +51,9 @@ Thumbs.db
 specs/
 .specify/
 
+# Visual brainstorm companion (local mockups)
+.superpowers/
+
 # Local thesis / sequencing (kept on this machine; not published)
 docs/VISION.md
 docs/VISION-BAR.md

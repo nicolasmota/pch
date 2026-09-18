@@ -25,7 +25,7 @@ This tree is the product documentation. When GitHub Pages is enabled it is serve
 - [Google connectors](guides/google-connectors.md) — OAuth client, Calendar, Gmail
 - [Plugins](guides/plugins.md) — bundled importers, marketplace, authoring
 - [Export and import](guides/export-import.md) — Portable Context Archive
-- [The Hub UI](guides/the-hub-ui.md) — every page in the app
+- [The Hub UI](guides/the-hub-ui.md) — Home, Agents, Review; Advanced for the rest
 
 ## Reference
 

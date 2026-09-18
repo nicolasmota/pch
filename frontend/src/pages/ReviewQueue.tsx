@@ -9,6 +9,8 @@ import EmptyState from "../components/EmptyState";
 import PageHeader from "../components/PageHeader";
 import Spinner from "../components/Spinner";
 import { useApi } from "../hooks/useApi";
+import Approvals from "./Approvals";
+import Conflicts from "./Conflicts";
 
 export default function ReviewQueue() {
   const memories = useApi<MemoryProposal[]>(() => api("/v1/memories/proposals?status=pending"));
@@ -120,7 +122,7 @@ export default function ReviewQueue() {
     <section className="space-y-6">
       <PageHeader
         title="Review"
-        description="Accept or reject proposed memories, operational state, and relations."
+        description="Accept or reject what agents proposed. Conflicts and outbound approvals appear here when they exist."
       />
       {memories.error ? <Alert tone="error">{memories.error}</Alert> : null}
       {operational.error ? <Alert tone="error">{operational.error}</Alert> : null}
@@ -194,6 +196,9 @@ export default function ReviewQueue() {
           </div>
         </Card>
       ))}
+
+      <Conflicts embedded />
+      <Approvals embedded />
 
       <ConfirmDialog
         open={rejectMemoryId !== null}
