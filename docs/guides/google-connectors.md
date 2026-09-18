@@ -1,8 +1,10 @@
 # Google connectors
 
-Calendar and Gmail are **import** connectors. They write vault objects through the kernel. They do not send mail or create events on Google’s side.
+Calendar and Gmail are **import** plugins. They write vault objects through the kernel. They do not send mail or create events on Google’s side.
 
 Google requires **your** OAuth client. The Hub never ships a shared client ID (a shared id is what produces `invalid_client`).
+
+Day to day: **Advanced → Plugins**. Install `pcl.google-calendar` or `pcl.gmail`, consent, then sync. The HTTP `/v1/connectors` surface and the `/connectors` page remain for leftover first-party accounts and for the OAuth redirect URI Google requires.
 
 ## Create a Desktop OAuth client
 
@@ -34,32 +36,32 @@ Alternatively:
 - Environment: `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET`
 - Hub API (owner): `PUT /v1/connectors/oauth/credentials`
 
-Restart the Hub after writing the file (`pch` or `make desktop`). **Connectors** (`/connectors`) shows whether OAuth is configured (`GET /v1/connectors/oauth/status`).
+Restart the Hub after writing the file (`pch` or `make desktop`). Plugins use this client. `GET /v1/connectors/oauth/status` reports whether it is configured. The `/connectors` deep link also shows that status.
 
 Never commit this file.
 
 ## Connect Calendar
 
-1. Connectors → add **calendar**.
-2. Complete Google consent in the browser (PKCE Desktop flow).
-3. The callback hits `/v1/connectors/oauth/callback` and redirects to `/connectors?connected=1`.
-4. Sync runs on a schedule and via **Sync**.
+1. Advanced → Plugins → install **Calendar** (`pcl.google-calendar`).
+2. Review permissions and allow.
+3. Complete Google consent in the browser (PKCE Desktop flow). The callback hits `/v1/connectors/oauth/callback` and redirects to `/plugins?connected=1`.
+4. Sync runs on a schedule and via **Sync now**.
 
 Events map to vault type `event` with classification **`private`**, `authority=source_imported`.
 
 ## Connect Gmail (selective)
 
-Gmail **must** include a selection. Create or patch with at least one of:
+Gmail **must** include a selection. In Plugins, install **Gmail** (`pcl.gmail`) and choose at least one of:
 
 - `labels` — Gmail label ids/names you choose
 - `senders` — allowlisted From addresses
 - `after` / `before` — date window
 
-The API rejects an email connector that selects “everything.”
+The API rejects an email import that selects “everything.”
 
 Imported messages are **`sensitive`** artifacts (`kind=email`, `untrusted=true`). A grant whose classification ceiling is `private` will not see them.
 
-## Lifecycle
+## Leftover HTTP (`/v1/connectors`)
 
 | Action | HTTP |
 |---|---|
@@ -69,11 +71,13 @@ Imported messages are **`sensitive`** artifacts (`kind=email`, `untrusted=true`)
 | Pause / resume | `POST …/pause`, `POST …/resume` |
 | Delete | `DELETE /v1/connectors/{id}` (optional `?purge=` to drop imported objects) |
 
-The scheduler also ticks while `pch-server` is running.
+The scheduler also ticks while `pch-server` is running. Prefer the Plugins HTTP surface (`/v1/plugins`) for new installs.
 
-## Plugins vs connectors
+## Plugins vs leftover connectors
 
-The same Google products also exist as **bundled plugins** (`pcl.google-calendar`, `pcl.gmail`) with declared HTTPS hosts and schedules (15m / 60m). Connectors are the first-party OAuth + sync path in the UI. Plugins are the import kit (OS-sandboxed on Linux and macOS when a backend is available; otherwise reduced). Use the Connectors page for Calendar/Gmail day to day; use [Plugins](plugins.md) to sideload or marketplace-install other importers.
+**Plugins** (`pcl.google-calendar`, `pcl.gmail`) are the import kit: OS-sandboxed on Linux and macOS when a backend is available; otherwise reduced. Use [Plugins](plugins.md) for Calendar/Gmail day to day and to sideload or marketplace-install other importers.
+
+`/v1/connectors` and `/connectors` stay for unmigrated 002-style accounts. The OAuth callback URI does not change.
 
 ## Import is data
 

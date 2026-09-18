@@ -39,7 +39,7 @@ class GoogleOAuthBody(BaseModel):
 @router.get("/connectors/oauth/callback")
 def oauth_callback(code: str, state: str, hub: Hub = Depends(get_hub)) -> RedirectResponse:
     complete_consent(hub, state, code)
-    return RedirectResponse(url="/connectors?connected=1", status_code=303)
+    return RedirectResponse(url="/plugins?connected=1", status_code=303)
 
 
 @router.get("/connectors/oauth/status")

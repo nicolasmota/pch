@@ -105,7 +105,7 @@ Write `~/.pch/google_oauth.json` (mode `0600`):
 
 Authorized redirect URI: `http://127.0.0.1:8765/v1/connectors/oauth/callback`.
 
-Then **Connectors** in the UI. Calendar → `private` events. Gmail → only the labels, senders, or dates you select, as `sensitive` artifacts.
+Then **Advanced → Plugins**. Install Calendar (`pcl.google-calendar`) or Gmail (`pcl.gmail`). Calendar → `private` events. Gmail → only the labels, senders, or dates you select, as `sensitive` artifacts.
 
 Details: [Google connectors](guides/google-connectors.md).
 

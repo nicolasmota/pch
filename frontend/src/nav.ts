@@ -16,7 +16,6 @@ export const ADVANCED_NAV: NavItem[] = [
   { to: "/projects", label: "Projects" },
   { to: "/memories", label: "Memories" },
   { to: "/plugins", label: "Plugins" },
-  { to: "/connectors", label: "Connectors" },
   { to: "/export", label: "Export" },
   { to: "/import", label: "Import" },
   { to: "/audit", label: "Audit" },

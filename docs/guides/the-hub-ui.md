@@ -21,8 +21,7 @@ Collapsed until you open it. Simulator appears here only when `PCH_SIM_ENABLED=1
 | `/search` | Search | Full-text search, filtered by type / project / classification |
 | `/projects` | Projects | Projects, goals, commitments, decisions, operational phase, relations |
 | `/memories` | Memories | Memories and preferences: create, supersede, retract |
-| `/plugins` | Plugins | Sideload, consent, enable / pause / sync |
-| `/connectors` | Connectors | Google OAuth, Calendar, Gmail |
+| `/plugins` | Plugins | Calendar, Gmail, RSS; sideload, consent, enable / pause / sync |
 | `/export` | Export | Encrypted PCA |
 | `/import` | Import | Stage/apply PCA and vendor batches |
 | `/audit` | Audit | Hash-chained event log, including contract issuance |
@@ -37,6 +36,7 @@ Collapsed until you open it. Simulator appears here only when `PCH_SIM_ENABLED=1
 | `/conflicts` | Conflicts | Standalone conflict list (also on Review when non-empty) |
 | `/approvals` | Approvals | Standalone outbound approvals (also on Review when non-empty) |
 | `/marketplace` | Marketplace | Signed catalog install. Route exists; **not** in the default nav. |
+| `/connectors` | Connectors | Leftover first-party Google accounts. Day-to-day import is **Plugins**. |
 
 ## Mental model while clicking
 

@@ -8,6 +8,8 @@ SIDEBAR = ROOT / "frontend" / "src" / "components" / "Sidebar.tsx"
 CONNECTIONS = ROOT / "frontend" / "src" / "pages" / "Connections.tsx"
 PAIR = ROOT / "docs" / "guides" / "pair-an-agent.md"
 HUB_UI = ROOT / "docs" / "guides" / "the-hub-ui.md"
+GOOGLE = ROOT / "docs" / "guides" / "google-connectors.md"
+GETTING_STARTED = ROOT / "docs" / "getting-started.md"
 
 FORBIDDEN_DEFAULT_LABELS = (
     'label: "Access"',
@@ -15,6 +17,7 @@ FORBIDDEN_DEFAULT_LABELS = (
     'label: "Conflicts"',
     'label: "Approvals"',
     'label: "Marketplace"',
+    'label: "Connectors"',
 )
 
 
@@ -29,8 +32,10 @@ def test_default_nav_is_home_agents_review() -> None:
     assert 'heading: "Advanced"' in text
     assert 'to: "/projects"' in text
     assert 'to: "/audit"' in text
+    assert 'to: "/plugins"' in text
     assert 'to: "/handoff"' not in text
     assert 'to: "/access"' not in text
+    assert 'to: "/connectors"' not in text
 
 
 def test_sidebar_collapses_advanced() -> None:
@@ -53,3 +58,14 @@ def test_pairing_docs_do_not_require_access_page() -> None:
     assert "Open **Access**" not in pair
     assert "Agents** + **Access**" not in hub
     assert "Advanced" in hub
+
+
+def test_connectors_is_deep_link_not_nav() -> None:
+    hub = HUB_UI.read_text(encoding="utf-8")
+    google = GOOGLE.read_text(encoding="utf-8")
+    started = GETTING_STARTED.read_text(encoding="utf-8")
+    assert "| `/connectors` |" in hub
+    assert "Deep links" in hub
+    assert "Use the Connectors page for Calendar/Gmail day to day" not in google
+    assert "Then **Connectors** in the UI" not in started
+    assert "Plugins" in started

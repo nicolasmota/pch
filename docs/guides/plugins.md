@@ -12,7 +12,7 @@ Plugin code talks to the Hub through `pch_sdk.plugin_runtime` (stdio JSON-RPC). 
 | `pcl.gmail` | Selected mail (`artifact` kind `email`) | `sensitive` | 60m |
 | `pcl.example-rss` | RSS/Atom items as artifacts | `personal` | 60m |
 
-The Hub UI **Plugins** page is the default path. Marketplace listings (`/marketplace`) are a signed static `catalog.json` and stay off the main menu. Third-party publish is a curator-reviewed PR, not self-service.
+The Hub UI **Plugins** page (under Advanced) is the day-to-day path for Calendar, Gmail, RSS, and sideloaded importers. Google OAuth client setup: [Google connectors](google-connectors.md). Marketplace listings (`/marketplace`) are a signed static `catalog.json` and stay off the main menu. Third-party publish is a curator-reviewed PR, not self-service.
 
 ## Developer loop
 

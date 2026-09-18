@@ -1,5 +1,5 @@
 import { FormEvent, useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { api, errorMessage } from "../api/client";
 import type { ConnectorAccount } from "../api/types";
 import Alert from "../components/Alert";
@@ -234,8 +234,12 @@ export default function Connectors() {
         description="Legacy Google connect flow. Calendar and Gmail now live under Plugins after Hub upgrade."
       />
       <Alert tone="info">
-        Prefer <a className="underline" href="/plugins">Plugins</a> for install, consent, pause, and removal. This
-        page remains for leftover 002-style connections that have not migrated.
+        Prefer{" "}
+        <Link className="underline" to="/plugins">
+          Plugins
+        </Link>{" "}
+        for install, consent, pause, and removal. This page remains for leftover 002-style
+        connections that have not migrated.
       </Alert>
       {error ? <Alert tone="error">{error}</Alert> : null}
       {justConnected ? (

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { api, errorMessage } from "../api/client";
 import Alert from "../components/Alert";
 import Button from "../components/Button";
@@ -32,6 +32,8 @@ export default function Plugins() {
   const [consent, setConsent] = useState<{ id: string; preview: ConsentPreview } | null>(null);
   const [pending, setPending] = useState<PluginRow | null>(null);
   const [purge, setPurge] = useState(false);
+  const [params] = useSearchParams();
+  const justConnected = params.get("connected") === "1";
 
   async function refresh() {
     const data = await api<PluginRow[]>("/v1/plugins");
@@ -124,7 +126,7 @@ export default function Plugins() {
     <section className="space-y-6">
       <PageHeader
         title="Plugins"
-        description="Optional import capabilities run as permissioned plugins. Nothing starts until you consent."
+        description="Install Calendar, Gmail, RSS, or a sideloaded importer. Nothing starts until you consent."
       />
       <p className="text-sm text-muted">
         Signed catalog installs live on{" "}
@@ -134,6 +136,11 @@ export default function Plugins() {
         , off the main menu.
       </p>
       {error ? <Alert tone="error">{error}</Alert> : null}
+      {justConnected ? (
+        <Alert tone="success">
+          Google is connected. Click Sync now on the plugin card to import matching items.
+        </Alert>
+      ) : null}
       {msg ? <Alert tone="success">{msg}</Alert> : null}
       {items.map((item) => (
         <Card key={item.id || item.plugin_id} className="space-y-2">

@@ -11,8 +11,13 @@ def _activate(client, kind="calendar", selection=None):
     assert created.status_code == 200 or created.status_code == 202
     data = created.json()
     qs = parse_qs(urlparse(data["consent_url"]).query)
-    cb = client.get("/v1/connectors/oauth/callback", params={"code": "x", "state": qs["state"][0]})
-    assert cb.status_code in (200, 303)
+    cb = client.get(
+        "/v1/connectors/oauth/callback",
+        params={"code": "x", "state": qs["state"][0]},
+        follow_redirects=False,
+    )
+    assert cb.status_code == 303
+    assert cb.headers["location"] == "/plugins?connected=1"
     return data["connector_id"]
 
 
