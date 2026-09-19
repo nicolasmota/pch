@@ -2,8 +2,6 @@
 
 Personal Context Hub is a **local-first context layer** you own. Agents connect over MCP. Your vault stays on this device, encrypted, bound to loopback.
 
-> Your agent can change. Your context shouldn’t.
-
 This tree is the product documentation. When GitHub Pages is enabled it is served at [nicolasmota.github.io/personal-context-hub](https://nicolasmota.github.io/personal-context-hub/). Agents should start at [llms.txt](llms.txt). Local planning files (`VISION.md`, `ROADMAP.md`) stay on the maintainer’s machine and are not published.
 
 ---

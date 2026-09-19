@@ -2,8 +2,6 @@
 
 Local-first **personal context** for any agent. Assistants connect over **MCP**. Your encrypted vault stays on this device, bound to loopback (`127.0.0.1`). The Hub is not a public server.
 
-> Your agent can change. Your context shouldn’t.
-
 [Getting started](getting-started.md) · [Pair an agent](guides/pair-an-agent.md) · [MCP tools](reference/mcp.md) · [Security](security.md) · [llms.txt](llms.txt)
 
 This site is the product documentation. Source: [github.com/nicolasmota/personal-context-hub](https://github.com/nicolasmota/personal-context-hub). Local planning files (`VISION.md`, `ROADMAP.md`) stay on the maintainer’s machine and are not published.

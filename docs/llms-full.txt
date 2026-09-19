@@ -2,8 +2,6 @@
 
 Local-first personal context for any agent. Encrypted vault on this device (`~/.pch`). HTTP and MCP bind loopback only (`127.0.0.1`). There is no cloud account and no PyPI release yet; install from the git checkout.
 
-Tagline: Your agent can change. Your context shouldn’t.
-
 Not a chatbot. Not a foundation model. Not a vector-database product. Agents read a granted slice of the person's record. None of them own it.
 
 Canonical docs: https://nicolasmota.github.io/personal-context-hub/
