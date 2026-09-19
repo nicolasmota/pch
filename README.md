@@ -38,6 +38,15 @@ pch
 
 After install, `pch` launches, `pch doctor` is the health check, `pch serve` is the browser, and `pch uninstall` keeps `~/.pch` unless you pass `--purge-data`. Simulator routes stay off unless `PCH_SIM_ENABLED=1`.
 
+### From source (contributors)
+
+```bash
+make install
+make desktop          # or: make serve
+```
+
+Requires Node.js 22+ for the UI build. After that, `uv run pch` launches from the checkout.
+
 ## Connect an assistant
 
 1. Open **Agents** in the Hub and create a pairing link.
