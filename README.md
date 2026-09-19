@@ -7,9 +7,11 @@ Your data lives on this device (default `~/.pch`), encrypted. The Hub binds **lo
 [![License: MIT](https://img.shields.io/badge/license-MIT-c9a227?style=flat-square)](LICENSE)
 [![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-1a1916?style=flat-square)](docs/getting-started.md)
 
-You tell one agent you’re weighing two roles — staff eng at a research lab, or founding eng at an early startup — and you’re remote-only. You open a different agent and say only: continue comparing the offers. It already knows both candidates and the constraint — because the Hub assembled a **situation package** under a grant you approved. You drop the startup. Every agent you have authorized sees the lab role as the live one.
+> **Your agent can change. Your context shouldn’t.**
 
-That is the product: a portable record of who you are and what is in play, plus the smallest sufficient slice for the task at hand. Not a chatbot. Not a model. Not a vector database.
+The Hub keeps an encrypted vault of what is true about you and what is in play right now. You pair assistants over MCP and grant each one a slice of that vault. When an agent asks for context, the Hub returns a **situation package** — the smallest sufficient set of facts, goals, and constraints for the task — not the whole vault and not a chat transcript. Change your mind in the Hub; every authorized agent sees the live state on the next request.
+
+Not a chatbot. Not a model. Not a vector database.
 
 **Documentation:** [docs/](docs/README.md) · [Docs site](https://nicolasmota.github.io/personal-context-hub/) · [llms.txt](docs/llms.txt) · **License:** [MIT](LICENSE)
 
