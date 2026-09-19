@@ -7,13 +7,11 @@ Your data lives on this device (default `~/.pch`), encrypted. The Hub binds **lo
 [![License: MIT](https://img.shields.io/badge/license-MIT-c9a227?style=flat-square)](LICENSE)
 [![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-1a1916?style=flat-square)](docs/getting-started.md)
 
-![Personal Context Hub — local-first context for any agent](docs/assets/social-preview.png)
-
 > **Your agent can change. Your context shouldn’t.**
 
-You tell one agent you are planning a ten-day trip for two, Amsterdam or London. You open a different agent and say only: continue planning the trip. It already knows the goal, the people, the candidates — because the Hub assembled a **situation package** under a grant you approved. You drop London. Every agent you have authorized sees Amsterdam as the live one.
+You tell one agent you’re weighing two roles — staff eng at a research lab, or founding eng at an early startup — and you’re remote-only. You open a different agent and say only: continue comparing the offers. It already knows both candidates and the constraint — because the Hub assembled a **situation package** under a grant you approved. You drop the startup. Every agent you have authorized sees the lab role as the live one.
 
-That is the product: a portable record of who you are and what you are doing, plus the smallest sufficient slice for the task at hand. Not a chatbot. Not a model. Not a vector database.
+That is the product: a portable record of who you are and what is in play, plus the smallest sufficient slice for the task at hand. Not a chatbot. Not a model. Not a vector database.
 
 **Documentation:** [docs/](docs/README.md) · [Docs site](https://nicolasmota.github.io/personal-context-hub/) · [llms.txt](docs/llms.txt) · **License:** [MIT](LICENSE)
 
@@ -70,14 +68,13 @@ Full guide: [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ```bash
 make install          # uv sync + frontend build
-make serve            # API with auto-reload (Python + UI watch)
-make desktop          # Hub with auto-reload (Python + UI watch)
+make desktop          # or: make serve
 make test             # pytest
 make lint             # ruff + eslint
 make help             # all targets
 ```
 
-Requires Python 3.12 or newer, [uv](https://docs.astral.sh/uv/), and Node.js 22+ (UI build only).
+Requires Python 3.12+, [uv](https://docs.astral.sh/uv/), and Node.js 22+ (UI build). `uv run pch` launches from the checkout.
 
 While running: interactive API docs at `http://127.0.0.1:8765/docs`, schema at `http://127.0.0.1:8765/openapi.json`.
 

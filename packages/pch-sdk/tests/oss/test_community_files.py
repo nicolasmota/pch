@@ -95,7 +95,7 @@ def test_readme_front_door() -> None:
     assert "CONTRIBUTING" in text
     assert "SECURITY" in text
     assert "CODE_OF_CONDUCT" in text or "Code of Conduct" in text
-    assert "docs/assets/social-preview.png" in text
+    assert "docs/assets/social-preview.png" not in text
     assert "docs/llms.txt" in text
 
 
